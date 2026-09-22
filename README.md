@@ -61,5 +61,6 @@ npm run check
 
 ## Acknowledgements
 
+- [PP-OCR](https://github.com/PaddlePaddle/PaddleOCR) for the OCR models
 - [ONNX Runtime Web](https://onnxruntime.ai/) for browser-side ONNX inference
 - [OpenCV.js](https://opencv.org/) for browser-side image processing

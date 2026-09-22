@@ -1,18 +1,18 @@
 {
   "name": "@uzen/paddleocr-js",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Browser-based OCR SDK powered by PaddleOCR, ONNX Runtime Web and OpenCV.js",
   "license": "Apache-2.0",
   "author": "PaddlePaddle Authors",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/PaddlePaddle/PaddleOCR.git",
-    "directory": "paddleocr-js/packages/core"
+    "url": "https://github.com/uzen-zone/paddleocr-js.git",
+    "directory": "packages/core"
   },
-  "homepage": "https://github.com/PaddlePaddle/PaddleOCR/tree/main/paddleocr-js",
+  "homepage": "https://github.com/uzen-zone/paddleocr-js/tree/main/packages/core",
   "bugs": {
-    "url": "https://github.com/PaddlePaddle/PaddleOCR/issues"
+    "url": "https://github.com/uzen-zone/paddleocr-js/issues"
   },
   "publishConfig": {
     "access": "public"

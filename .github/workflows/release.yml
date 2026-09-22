@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   id-token: write
+  packages: write
 
 jobs:
   release:
@@ -40,3 +41,13 @@ jobs:
       - run: npm run test
 
       - run: npm publish --workspace packages/core --provenance --access public
+
+      - name: Publish to GitHub Packages
+        run: |
+          cd packages/core
+          node -e "const fs=require('fs'),p='package.json',j=JSON.parse(fs.readFileSync(p,'utf8'));j.name='@uzen-zone/paddleocr-js';fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n')"
+          npmrc="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
+          printf '\n//npm.pkg.github.com/:_authToken=%s\n@uzen-zone:registry=https://npm.pkg.github.com\n' "$NODE_AUTH_TOKEN" >> "$npmrc"
+          npm publish --ignore-scripts --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

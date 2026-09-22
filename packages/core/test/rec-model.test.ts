@@ -116,7 +116,7 @@ describe("recognition model", () => {
     });
     getTransformOp.mockReturnValueOnce({ image_shape: [3, 32, 160] });
 
-    const { DEFAULT_REC_MODEL_PARSE_FALLBACKS, parseRecModelConfigText } = await loadRecModule();
+    const { parseRecModelConfigText } = await loadRecModule();
     expect(parseRecModelConfigText("config")).toEqual({
       imageShape: [3, 32, 160],
       charDict: ["a", "b", " "]

@@ -90,8 +90,8 @@ export function parseTextLineOrientationModelConfigText(
   const labels = topk.label_list;
 
   return {
-    width: Number(size?.[0] ?? DEFAULT_TEXTLINE_ORIENTATION_MODEL_CONFIG.width),
-    height: Number(size?.[1] ?? DEFAULT_TEXTLINE_ORIENTATION_MODEL_CONFIG.height),
+    width: size?.[0] ?? DEFAULT_TEXTLINE_ORIENTATION_MODEL_CONFIG.width,
+    height: size?.[1] ?? DEFAULT_TEXTLINE_ORIENTATION_MODEL_CONFIG.height,
     normalize: {
       mean:
         (normalize?.mean as number[] | undefined) ??

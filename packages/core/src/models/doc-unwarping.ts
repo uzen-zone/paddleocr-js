@@ -50,7 +50,8 @@ interface PreprocessResult {
   height: number;
 }
 
-export function parseDocUnwarpingModelConfigText(_text: string): DocUnwarpingModelConfig {
+export function parseDocUnwarpingModelConfigText(_text?: string): DocUnwarpingModelConfig {
+  void _text;
   return { ...DEFAULT_DOC_UNWARPING_MODEL_CONFIG };
 }
 
@@ -176,8 +177,8 @@ function postprocess(cv: OpenCv, output: Tensor, fallbackW: number, fallbackH: n
   if (dims.length !== 4 || dims[1] !== 3) {
     throw new Error(`Unexpected document unwarping output dims: [${dims.join(", ")}]`);
   }
-  const height = Number(dims[2] || fallbackH);
-  const width = Number(dims[3] || fallbackW);
+  const height = dims[2] || fallbackH;
+  const width = dims[3] || fallbackW;
   const hw = width * height;
   const data = output.data as Float32Array;
   const rgba = new Uint8Array(hw * 4);

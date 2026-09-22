@@ -3,6 +3,9 @@
 .idea/
 .vscode/
 
+# npm auth
+.npmrc
+
 # Dependencies
 node_modules/
 

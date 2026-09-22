@@ -15,7 +15,7 @@ Commands from the `paddleocr-js/` root:
 ```bash
 npm run build          # build SDK then demo (explicit topological order)
 npm run build:sdk      # build only the SDK (packages/core)
-npm run build:demo     # build only the demo app (apps/demo)
+npm run build:demo     # build only the demo app (demo)
 npm run lint
 npm run test
 npm run typecheck      # typecheck all workspaces (core + demo)
@@ -33,12 +33,12 @@ Single-workspace examples:
 
 ```bash
 npm run build --workspace packages/core
-npm run build --workspace apps/demo
+npm run build --workspace demo
 ```
 
 ## TypeScript
 
-Both the SDK (`packages/core`) and the demo app (`apps/demo`) are written in TypeScript with strict mode enabled. ESLint uses `typescript-eslint` with `strictTypeChecked` for source files under `packages/**/src/` and `apps/**/src/`. Test files under `packages/**/test/` use the lighter `recommendedTypeChecked` preset with relaxed rules (e.g. `no-unsafe-*` and `no-explicit-any` are disabled).
+Both the SDK (`packages/core`) and the demo app (`demo`) are written in TypeScript with strict mode enabled. ESLint uses `typescript-eslint` with `strictTypeChecked` for source files under `packages/**/src/` and `demo/**/src/`. Test files under `packages/**/test/` use the lighter `recommendedTypeChecked` preset with relaxed rules (e.g. `no-unsafe-*` and `no-explicit-any` are disabled).
 
 `npm run typecheck` runs `tsc --noEmit` across all workspaces. The demo typechecks directly against the SDK's source using `paths` mapping in its `tsconfig.json`, so it does not strictly require `build:sdk` to run first for typechecking.
 

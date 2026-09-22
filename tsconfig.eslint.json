@@ -9,6 +9,6 @@
       "@uzen/paddleocr-js/viz": ["./packages/core/src/viz/index.ts"]
     }
   },
-  "include": ["packages/**/src/**/*.ts", "packages/**/test/**/*.ts", "apps/**/src/**/*.ts"],
+  "include": ["packages/**/src/**/*.ts", "packages/**/test/**/*.ts", "demo/**/src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

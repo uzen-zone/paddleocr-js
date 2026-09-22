@@ -24,14 +24,14 @@
   },
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "demo"
   ],
   "scripts": {
-    "dev:demo": "npm run dev --workspace apps/demo --",
+    "dev:demo": "npm run dev --workspace demo --",
     "build": "npm run build:sdk && npm run build:demo",
-    "build:demo": "npm run build --workspace apps/demo",
+    "build:demo": "npm run build --workspace demo",
     "build:sdk": "npm run build --workspace packages/core",
-    "preview:demo": "npm run preview --workspace apps/demo --",
+    "preview:demo": "npm run preview --workspace demo --",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "npm run typecheck --workspaces --if-present",
@@ -40,7 +40,7 @@
     "test:watch": "vitest",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "clean": "rm -rf packages/*/dist apps/*/dist",
+    "clean": "rm -rf packages/*/dist demo/dist",
     "check": "npm run format:check && npm run lint && npm run build:sdk && npm run typecheck && npm run test && npm run build:demo",
     "release": "npm run build:sdk && npm publish --workspace packages/core"
   },

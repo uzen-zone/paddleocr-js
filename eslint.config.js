@@ -8,7 +8,7 @@ export default tseslint.config(
   },
   eslint.configs.recommended,
   {
-    files: ["packages/**/src/**/*.ts", "apps/**/src/**/*.ts"],
+    files: ["packages/**/src/**/*.ts", "demo/**/src/**/*.ts"],
     extends: [...tseslint.configs.strictTypeChecked],
     languageOptions: {
       globals: { ...globals.browser },
@@ -41,7 +41,7 @@ export default tseslint.config(
     }
   },
   {
-    files: ["apps/**/*.js", "*.config.{js,ts}", "packages/**/*.config.*"],
+    files: ["demo/**/*.js", "*.config.{js,ts}", "packages/**/*.config.*"],
     languageOptions: {
       globals: { ...globals.browser, ...globals.node }
     }

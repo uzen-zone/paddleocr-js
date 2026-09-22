@@ -15,7 +15,7 @@ npm install
 ```bash
 npm run build          # 先构建 SDK 再构建 demo（显式拓扑顺序）
 npm run build:sdk      # 仅构建 SDK（packages/core）
-npm run build:demo     # 仅构建 demo 应用（apps/demo）
+npm run build:demo     # 仅构建 demo 应用（demo）
 npm run lint
 npm run test
 npm run typecheck      # 对所有 workspace 执行类型检查（core + demo）
@@ -33,12 +33,12 @@ npm run dev:demo
 
 ```bash
 npm run build --workspace packages/core
-npm run build --workspace apps/demo
+npm run build --workspace demo
 ```
 
 ## TypeScript
 
-SDK（`packages/core`）与 demo 应用（`apps/demo`）都使用 TypeScript 严格模式。`packages/**/src/` 与 `apps/**/src/` 下的源码使用 `typescript-eslint` 的 `strictTypeChecked` 规则集；`packages/**/test/` 下的测试使用较轻的 `recommendedTypeChecked`，并放宽了部分规则（例如 `no-unsafe-*` 与 `no-explicit-any`）。
+SDK（`packages/core`）与 demo 应用（`demo`）都使用 TypeScript 严格模式。`packages/**/src/` 与 `demo/**/src/` 下的源码使用 `typescript-eslint` 的 `strictTypeChecked` 规则集；`packages/**/test/` 下的测试使用较轻的 `recommendedTypeChecked`，并放宽了部分规则（例如 `no-unsafe-*` 与 `no-explicit-any`）。
 
 `npm run typecheck` 会在所有 workspace 上执行 `tsc --noEmit`。demo 在 `tsconfig.json` 里通过 `paths` 直接引用 SDK 源码，因此类型检查并不严格依赖先执行 `build:sdk`。
 

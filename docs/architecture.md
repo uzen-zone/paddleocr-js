@@ -7,7 +7,7 @@ English | [简体中文](architecture_cn.md)
 The `paddleocr-js` folder has two main parts:
 
 - `packages/core`: the browser PaddleOCR SDK (published on npm as `@uzen/paddleocr-js`)
-- `apps/demo`: a demo application for PP-OCR that consumes the SDK
+- `demo`: a demo application for PP-OCR that consumes the SDK
 
 ## SDK package layout (`packages/core`)
 
@@ -115,4 +115,4 @@ The SDK owns OCR runtime setup and inference orchestration. The host application
 - worker-capable bundler/runtime support when `worker: true` is used
 - application UI, status messaging, and visualization
 
-Here, the `apps/` directory contains such host applications.
+Here, the `demo/` directory contains such a host application.

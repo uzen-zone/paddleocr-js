@@ -7,7 +7,7 @@
 `paddleocr-js` 目录下主要有两部分：
 
 - `packages/core`：浏览器 PaddleOCR SDK，发布到 npm 时包名为 `@uzen/paddleocr-js`
-- `apps/demo`：依赖该 SDK 的 PP-OCR 演示应用
+- `demo`：依赖该 SDK 的 PP-OCR 演示应用
 
 ## SDK 包布局（`packages/core`）
 
@@ -112,4 +112,4 @@ SDK 负责 OCR 运行时初始化与推理编排；宿主应用仍需负责：
 - `worker: true` 场景下支持产出并加载 Worker 的打包工具或运行时
 - 应用界面、状态提示与可视化
 
-这里的 `apps/` 目录就承载了这类宿主应用。
+这里的 `demo/` 目录就承载了这类宿主应用。

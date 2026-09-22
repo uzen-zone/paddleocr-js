@@ -13,9 +13,9 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "baseUrl": ".",
     "paths": {
-      "@uzen/paddleocr-js": ["../../packages/core/src/index.ts"],
-      "@uzen/paddleocr-js/viz": ["../../packages/core/src/viz/index.ts"]
+      "@uzen/paddleocr-js": ["../packages/core/src/index.ts"],
+      "@uzen/paddleocr-js/viz": ["../packages/core/src/viz/index.ts"]
     }
   },
-  "include": ["src", "../../packages/core/src/types/*.d.ts"]
+  "include": ["src", "../packages/core/src/types/*.d.ts"]
 }

@@ -13,12 +13,16 @@ Official browser OCR SDK and demo for PaddleOCR.
 
 ## Features
 
-- 文本检测 + 识别（OCR）Pipeline
-- 文档方向分类（0°/90°/180°/270°）自动旋转校正
-- 文档去歪曲 / 展平预处理
-- 文本行方向分类（0°/180°）识别前校正
-- Web Worker 模式支持
-- 全部在浏览器本地推理，不上传云端
+- Text detection + recognition (OCR) pipeline
+- Document orientation classification (0°/90°/180°/270°) with auto-rotation
+- Document unwarping / flattening preprocessing
+- Text line orientation classification (0°/180°) for pre-recognition correction
+- Web Worker mode support
+- Fully local browser inference — no cloud upload required
+- Custom model support (PP-OCRv5, PP-OCRv6)
+- YAML pipeline configuration
+- Visualization utilities for rendering OCR results
+- Multi-language support (Chinese, English, Japanese, etc.)
 
 ## Quick start
 

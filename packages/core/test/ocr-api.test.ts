@@ -90,7 +90,7 @@ describe("PaddleOCR high-level API", () => {
     expect(normalized.modelSelection).not.toHaveProperty("recAsset");
     expect(normalized.runtimeDefaults.text_det_limit_side_len).toBe(64);
     expect(normalized.runtimeDefaults.text_det_limit_type).toBe("min");
-    expect(normalized.warnings).toHaveLength(2);
+    expect(normalized.warnings).toHaveLength(0);
   });
 
   it("keeps pipeline-declared custom assets separate from model selection", () => {
@@ -310,7 +310,18 @@ describe("PaddleOCR high-level API", () => {
 
   it("warns about unsupported pipeline features by default", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    await PaddleOCR.create({ pipelineConfig: pipelineConfigText, ...CREATE_WITHOUT_INIT });
+    const configWithWarning = `
+pipeline_name: OCR
+text_type: custom_type
+use_doc_preprocessor: false
+use_textline_orientation: false
+SubModules:
+  TextDetection:
+    model_name: PP-OCRv5_mobile_det
+  TextRecognition:
+    model_name: PP-OCRv5_mobile_rec
+`;
+    await PaddleOCR.create({ pipelineConfig: configWithWarning, ...CREATE_WITHOUT_INIT });
 
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();
@@ -352,13 +363,24 @@ describe("PaddleOCR high-level API", () => {
   });
 
   it("can turn unsupported pipeline warnings into errors", async () => {
+    const configWithWarning = `
+pipeline_name: OCR
+text_type: custom_type
+use_doc_preprocessor: false
+use_textline_orientation: false
+SubModules:
+  TextDetection:
+    model_name: PP-OCRv5_mobile_det
+  TextRecognition:
+    model_name: PP-OCRv5_mobile_rec
+`;
     await expect(
       PaddleOCR.create({
-        pipelineConfig: pipelineConfigText,
+        pipelineConfig: configWithWarning,
         ...CREATE_WITHOUT_INIT,
         unsupportedBehavior: "error"
       })
-    ).rejects.toThrow(/not yet supported/i);
+    ).rejects.toThrow(/is not used by PaddleOCR/i);
   });
 
   it("parses the generated default OCR pipeline config text", () => {

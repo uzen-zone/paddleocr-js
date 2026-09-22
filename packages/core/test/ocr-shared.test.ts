@@ -81,7 +81,10 @@ describe("OCR shared option resolution", () => {
     expect(options.pipelineConfig.assets.rec?.url).toMatch(/PP-OCRv5_mobile_rec.*\.tar$/);
     expect(options.pipelineConfig.modelSelection).toEqual({
       textDetectionModelName: "PP-OCRv5_mobile_det",
-      textRecognitionModelName: "PP-OCRv5_mobile_rec"
+      textRecognitionModelName: "PP-OCRv5_mobile_rec",
+      docOrientationModelName: "PP-LCNet_x1_0_doc_ori",
+      docUnwarpingModelName: "UVDoc",
+      textLineOrientationModelName: "PP-LCNet_x1_0_textline_ori"
     });
   });
 

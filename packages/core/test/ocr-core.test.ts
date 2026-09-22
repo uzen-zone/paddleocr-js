@@ -73,13 +73,20 @@ function minimalPipelineConfig(overrides: Record<string, unknown> = {}) {
     unsupportedFeatures: [] as string[],
     modelSelection: {
       textDetectionModelName: "det-name",
-      textRecognitionModelName: "rec-name"
+      textRecognitionModelName: "rec-name",
+      docOrientationModelName: null,
+      docUnwarpingModelName: null,
+      textLineOrientationModelName: null
     },
     assets: createResolvedAssets(),
     runtimeDefaults: {} as Record<string, unknown>,
     pipelineBatchSize: 1,
     textDetectionBatchSize: 1,
     textRecognitionBatchSize: 1,
+    useDocOrientationClassify: false,
+    useDocUnwarping: false,
+    useTextLineOrientation: false,
+    textLineOrientationBatchSize: 1,
     ...overrides
   };
 }
@@ -213,7 +220,7 @@ describe("OCR pipeline core", () => {
 
   it("predicts OCR results and filters by score threshold", async () => {
     const cv = { name: "cv" };
-    const sourceMat = { delete: vi.fn() };
+    const sourceMat = { delete: vi.fn(), clone: vi.fn().mockReturnThis(), cols: 640, rows: 480 };
     const sourceImage = {
       width: 640,
       height: 480,
@@ -306,8 +313,8 @@ describe("OCR pipeline core", () => {
 
   it("returns one OCR result per source when predict receives an array of inputs", async () => {
     const cv = { name: "cv" };
-    const mat1 = { delete: vi.fn() };
-    const mat2 = { delete: vi.fn() };
+    const mat1 = { delete: vi.fn(), clone: vi.fn().mockReturnThis(), cols: 100, rows: 100 };
+    const mat2 = { delete: vi.fn(), clone: vi.fn().mockReturnThis(), cols: 200, rows: 200 };
     const dispose1 = vi.fn();
     const dispose2 = vi.fn();
     const sourceImage1 = { width: 100, height: 100, mat: mat1, dispose: dispose1 };
@@ -370,8 +377,8 @@ describe("OCR pipeline core", () => {
 
   it("passes multiple sources to det in one pipeline batch when pipelineBatchSize > 1", async () => {
     const cv = { name: "cv" };
-    const mat1 = { delete: vi.fn() };
-    const mat2 = { delete: vi.fn() };
+    const mat1 = { delete: vi.fn(), clone: vi.fn().mockReturnThis(), cols: 100, rows: 100 };
+    const mat2 = { delete: vi.fn(), clone: vi.fn().mockReturnThis(), cols: 200, rows: 200 };
     const dispose1 = vi.fn();
     const dispose2 = vi.fn();
     const sourceImage1 = { width: 100, height: 100, mat: mat1, dispose: dispose1 };
@@ -476,7 +483,7 @@ describe("OCR pipeline core", () => {
     const sourceImage = {
       width: 1,
       height: 1,
-      mat: {},
+      mat: { clone: vi.fn().mockReturnThis(), delete: vi.fn(), cols: 1, rows: 1 },
       dispose: vi.fn()
     };
     const runner = new OcrPipelineRunner({

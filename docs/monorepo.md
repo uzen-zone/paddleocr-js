@@ -18,6 +18,8 @@ npm run dev --workspace demo
 - `packages/*`: reusable packages; the SDK lives under `packages/core` but keeps the **npm package name** `@uzen/paddleocr-js`
 - `demo`: a private application (the demo); not published to npm as a product
 
+The repo deliberately keeps the private demo at the repo root instead of a separate `apps/` directory. `demo` is the **only** non-published application and will stay that way, so an `apps/` layer would only add nesting for no benefit. `packages/*` therefore always means "publishable library packages", and `demo` is the single consumer application.
+
 ## Versioning and release
 
 - **Directory:** `packages/core` — SDK source and publish manifest for the public package

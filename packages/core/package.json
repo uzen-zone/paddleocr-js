@@ -1,6 +1,6 @@
 {
   "name": "@uzen/paddleocr-js",
-  "version": "1.0.1",
+  "version": "0.5.2",
   "description": "Browser-based OCR SDK powered by PaddleOCR, ONNX Runtime Web and OpenCV.js",
   "license": "Apache-2.0",
   "author": "PaddlePaddle Authors",

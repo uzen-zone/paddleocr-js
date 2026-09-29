@@ -164,14 +164,13 @@ async function runOcr(): Promise<void> {
 
   try {
     setStatus("Running OCR...");
-    const result: OcrResult = (
-      await state.ocr.predict(state.imageFile, {
-        textDetThresh: Number(ui.detThresh.value),
-        textDetBoxThresh: Number(ui.boxThresh.value),
-        textDetUnclipRatio: Number(ui.unclipRatio.value),
-        textRecScoreThresh: Number(ui.recScoreThresh.value)
-      })
-    )[0];
+    // A single File in -> a single OcrResult out, no unwrapping needed.
+    const result: OcrResult = await state.ocr.predict(state.imageFile, {
+      textDetThresh: Number(ui.detThresh.value),
+      textDetBoxThresh: Number(ui.boxThresh.value),
+      textDetUnclipRatio: Number(ui.unclipRatio.value),
+      textRecScoreThresh: Number(ui.recScoreThresh.value)
+    });
 
     if (!state.previewBitmap) {
       state.previewBitmap = await createImageBitmap(state.imageFile);

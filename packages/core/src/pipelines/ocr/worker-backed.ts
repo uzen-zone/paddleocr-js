@@ -4,6 +4,7 @@
  */
 
 import { sourceToWorkerPayload } from "../../platform/browser";
+import type { ImageSource } from "../../platform/browser";
 import { INLINED_ORT_VERSION } from "../../runtime/ort-version";
 import { createWorkerTransportClient } from "../../worker/client";
 import type { WorkerTransportClient, WorkerOptions } from "../../worker/client";
@@ -105,7 +106,19 @@ export class WorkerBackedPaddleOCR {
     return this.modelConfig;
   }
 
-  async predict(input: unknown, params: OcrRuntimeParamsInput = {}): Promise<OcrResult[]> {
+  /**
+   * Runs the OCR pipeline inside the worker.
+   *
+   * Mirrors `OcrPipelineRunner.predict`: a single input resolves to a single
+   * `OcrResult`, an array input to one result per element. `cv.Mat` is absent
+   * from the accepted input types because it is not transferable.
+   */
+  predict(input: ImageSource, params?: OcrRuntimeParamsInput): Promise<OcrResult>;
+  predict(input: ImageSource[], params?: OcrRuntimeParamsInput): Promise<OcrResult[]>;
+  async predict(
+    input: unknown,
+    params: OcrRuntimeParamsInput = {}
+  ): Promise<OcrResult | OcrResult[]> {
     this.ensureActive();
     await this.initialize();
     const sources: unknown[] = Array.isArray(input) ? input : [input];
@@ -116,14 +129,16 @@ export class WorkerBackedPaddleOCR {
     );
     const combinedPayloads = payloads.map((p) => p.payload);
     const combinedTransferables = payloads.flatMap((p) => p.transferables);
-    return this.transportClient.request(
+    const results = (await this.transportClient.request(
       "predict",
       {
         sources: combinedPayloads,
         params
       },
       combinedTransferables
-    ) as Promise<OcrResult[]>;
+    )) as OcrResult[];
+
+    return Array.isArray(input) ? results : results[0];
   }
 
   async dispose(): Promise<void> {

@@ -33,7 +33,16 @@ import { getOcrRuntimeParams } from "./runtime-params";
 import type { NormalizedPipelineConfig } from "./config";
 import { cloneDefaultOcrConfig, validateLoadedModelName } from "./shared";
 import type { NormalizedOrtOptions } from "./shared";
-import type { SourceMatResult } from "../../platform/browser";
+import type { ImageSource, SourceMatResult } from "../../platform/browser";
+
+/**
+ * Accepted `predict()` input on the main thread.
+ *
+ * `cv.Mat` is supported here because it is already resident in memory, but it
+ * is not transferable and therefore unavailable in worker mode -- see
+ * `WorkerBackedPaddleOCR.predict`, which accepts `ImageSource` only.
+ */
+export type OcrPredictInput = ImageSource | Mat;
 
 export interface OcrResultItem {
   poly: Point2D[];
@@ -336,7 +345,19 @@ export class OcrPipelineRunner {
     return this.modelConfig;
   }
 
-  async predict(input: unknown, params: OcrRuntimeParamsInput = {}): Promise<OcrResult[]> {
+  /**
+   * Runs the OCR pipeline.
+   *
+   * A single input resolves to a single `OcrResult`; an array input resolves to
+   * one `OcrResult` per element, in the same order. The return shape mirrors
+   * the input shape, so the common single-image call site needs no unwrapping.
+   */
+  predict(input: OcrPredictInput, params?: OcrRuntimeParamsInput): Promise<OcrResult>;
+  predict(input: OcrPredictInput[], params?: OcrRuntimeParamsInput): Promise<OcrResult[]>;
+  async predict(
+    input: unknown,
+    params: OcrRuntimeParamsInput = {}
+  ): Promise<OcrResult | OcrResult[]> {
     if (!this.sourceToMat) {
       throw new Error("PaddleOCR source adapter is not configured.");
     }
@@ -495,7 +516,7 @@ export class OcrPipelineRunner {
     const requestedBackend =
       (this.options.ortOptions as NormalizedOrtOptions | undefined)?.backend ?? "auto";
 
-    return partials.map(
+    const results: OcrResult[] = partials.map(
       (p): OcrResult => ({
         image: p.image,
         items: p.items,
@@ -522,6 +543,10 @@ export class OcrPipelineRunner {
         }
       })
     );
+
+    // Array input stays 1:1, so batch consumers can zip results back onto their
+    // own image list. A single input gets that one result unwrapped.
+    return Array.isArray(input) ? results : results[0];
   }
 
   async disposeModelsOnly(): Promise<void> {

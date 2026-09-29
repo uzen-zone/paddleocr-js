@@ -8,6 +8,7 @@ import { sourcePayloadToMat, ensureServedFromHttp } from "../../platform/worker"
 import type { OcrPipelineRunnerOptions } from "./core";
 import { OcrPipelineRunner } from "./core";
 import type { OcrRuntimeParamsInput } from "./runtime-params";
+import type { ImageSource } from "../../platform/browser";
 
 function createPaddleOCRWorkerMessageHandler() {
   let ocr: OcrPipelineRunner | null = null;
@@ -30,7 +31,9 @@ function createPaddleOCRWorkerMessageHandler() {
     if (!ocr) {
       throw new Error("OCR worker is not initialized.");
     }
-    const sources = payload.sources;
+    // Always a batch: the client normalizes a single source into a one-element
+    // array before transferring, so the worker always returns an array 1:1.
+    const sources = payload.sources as ImageSource[];
     return ocr.predict(sources, (payload.params || {}) as OcrRuntimeParamsInput);
   }
 

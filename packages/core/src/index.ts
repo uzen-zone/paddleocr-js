@@ -54,6 +54,7 @@ export type {
   OcrResultItem,
   OcrResultMetrics,
   OcrResultRuntime,
+  OcrPredictInput,
   InitializationSummary,
   OcrPipelineRunnerOptions
 } from "./pipelines/ocr/core";

@@ -39,11 +39,13 @@ await PaddleOCR.create({ lang: "ch", ocrVersoin: "PP-OCRv5" });
 
 - `INLINED_ORT_VERSION: string | null` —— 导出包内 worker 实际使用的 `onnxruntime-web` 版本。主线程用使用方安装的版本、worker 用构建时烤进去的版本，两者必须一致；该常量让使用方在启动时就能比对，而不是等到 WASM 实例化失败
 - `OcrPredictInput` 类型导出
+- 补全模型 asset 别名矩阵：新增 `text_detection_model_asset`、`text_recognition_model_asset`、`doc_orientation_model_asset`、`doc_unwarping_model_asset`、`textline_orientation_model_asset` 五个 snake_case 别名。此前 `*ModelAsset` 只有 camelCase、`*ModelDir` 两种都有，snake_case 的 asset 键会被静默忽略
 
 ### 改进
 
 - `Point2D` 元组元素加上 `[x, y]` 标签，并在注释中说明 `[x, y]` 顺序，以及 `.x` / `.y` 在元组上会得到 `undefined` 这一陷阱
 - worker 模式未设置 `wasmPaths` 时的控制台警告现在会指明所需版本
+- `extractTarEntries` 嗅探 gzip magic bytes（`0x1f 0x8b`）并在解析前解压，`.tar.gz` 模型归档现在可用。此前 `.tar.gz` 被当作未压缩 tar 解析，条目名变成乱码，调用方最终看到 `Entry "inference.onnx" was not found in the tar archive.` —— 报错指向归档内容，而真正的问题是归档被压缩了。该函数变为 `async`，但未从包根导出，不涉及公开 API 变更
 
 ### 文档
 
@@ -53,7 +55,7 @@ await PaddleOCR.create({ lang: "ch", ocrVersoin: "PP-OCRv5" });
 
 ### 测试
 
-新增 5 个测试，覆盖：`predict()` 单图/数组两种形态的正反断言、急切初始化的「等待」语义（含变异验证）、`INLINED_ORT_VERSION` 的导出与取值形态。
+新增 8 个测试，覆盖：`predict()` 单图/数组两种形态的正反断言、急切初始化的「等待」语义（含变异验证）、`INLINED_ORT_VERSION` 的导出与取值形态、五个 snake_case asset 别名、gzip 往返解压（含变异验证）与截断流。
 
 ---
 

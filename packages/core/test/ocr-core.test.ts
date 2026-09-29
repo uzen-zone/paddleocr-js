@@ -290,25 +290,25 @@ describe("OCR pipeline core", () => {
     expect(cropA.delete).toHaveBeenCalledTimes(1);
     expect(cropB.delete).toHaveBeenCalledTimes(1);
     expect(sourceImage.dispose).toHaveBeenCalledTimes(1);
-    expect(result).toEqual([
-      {
-        image: { width: 640, height: 480 },
-        items: [{ poly: [[1, 1]], text: "high", score: 0.95 }],
-        metrics: {
-          detMs: 10,
-          recMs: 20,
-          totalMs: 60,
-          detectedBoxes: 2,
-          recognizedCount: 1
-        },
-        runtime: {
-          requestedBackend: AUTO_ORT_OPTIONS.backend,
-          detProvider: "wasm",
-          recProvider: "wasm",
-          webgpuAvailable: false
-        }
+    // Single input resolves to a single result, not a one-element array.
+    expect(Array.isArray(result)).toBe(false);
+    expect(result).toEqual({
+      image: { width: 640, height: 480 },
+      items: [{ poly: [[1, 1]], text: "high", score: 0.95 }],
+      metrics: {
+        detMs: 10,
+        recMs: 20,
+        totalMs: 60,
+        detectedBoxes: 2,
+        recognizedCount: 1
+      },
+      runtime: {
+        requestedBackend: AUTO_ORT_OPTIONS.backend,
+        detProvider: "wasm",
+        recProvider: "wasm",
+        webgpuAvailable: false
       }
-    ]);
+    });
   });
 
   it("returns one OCR result per source when predict receives an array of inputs", async () => {
@@ -361,6 +361,8 @@ describe("OCR pipeline core", () => {
 
     const results = await runner.predict([{ kind: "a" }, { kind: "b" }], {});
 
+    // Array input stays 1:1 and is not unwrapped.
+    expect(Array.isArray(results)).toBe(true);
     expect(detModel.predict).toHaveBeenCalledTimes(2);
     expect(detModel.predict).toHaveBeenNthCalledWith(1, cv, [mat1], {});
     expect(detModel.predict).toHaveBeenNthCalledWith(2, cv, [mat2], {});
@@ -494,7 +496,7 @@ describe("OCR pipeline core", () => {
     const result = await runner.predict({}, {});
 
     expect(initOpenCvRuntime).toHaveBeenCalled();
-    expect(result[0].items).toEqual([]);
+    expect(result.items).toEqual([]);
     expect(sourceImage.dispose).toHaveBeenCalledTimes(1);
   });
 

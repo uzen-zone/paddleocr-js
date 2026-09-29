@@ -137,7 +137,9 @@ describe("worker-backed OCR adapter", () => {
       },
       transferables
     );
-    expect(result).toEqual([mockOcrResult]);
+    // Single input resolves to a single result, not a one-element array.
+    expect(Array.isArray(result)).toBe(false);
+    expect(result).toEqual(mockOcrResult);
   });
 
   it("predicts multiple sources when input is an array", async () => {
@@ -179,8 +181,11 @@ describe("worker-backed OCR adapter", () => {
 
     const ocr = new WorkerBackedPaddleOCR(createWorkerBackedOptions(), transportClient);
 
-    await ocr.predict([{ a: 1 }, { b: 2 }], {});
+    const results = await ocr.predict([{ a: 1 }, { b: 2 }], {});
 
+    // Array input stays 1:1 and is not unwrapped.
+    expect(Array.isArray(results)).toBe(true);
+    expect(results).toHaveLength(2);
     expect(sourceToWorkerPayload).toHaveBeenCalledTimes(2);
     expect(transportClient.request).toHaveBeenNthCalledWith(
       2,

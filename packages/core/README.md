@@ -83,10 +83,10 @@ await PaddleOCR.create({
 
 Three optional preprocessing stages can be enabled to improve recognition quality:
 
-| Stage | Model Name | Description |
-|-------|-----------|-------------|
-| Document orientation | `PP-LCNet_x1_0_doc_ori` | Classifies document angle (0°/90°/180°/270°) and auto-rotates |
-| Document unwarping | `UVDoc` | Corrects perspective distortion and page curl |
+| Stage                 | Model Name                   | Description                                                                        |
+| --------------------- | ---------------------------- | ---------------------------------------------------------------------------------- |
+| Document orientation  | `PP-LCNet_x1_0_doc_ori`      | Classifies document angle (0°/90°/180°/270°) and auto-rotates                      |
+| Document unwarping    | `UVDoc`                      | Corrects perspective distortion and page curl                                      |
 | Text line orientation | `PP-LCNet_x1_0_textline_ori` | Classifies each text line (0°/180°) and flips upside-down lines before recognition |
 
 Enable them by passing the corresponding model name:
@@ -306,26 +306,26 @@ The viz module renders a side-by-side composite image: the original image with d
 
 ### Construction options summary
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `lang` | `string` | Language code, e.g. `"ch"`, `"en"`, `"japan"` |
-| `ocrVersion` | `string` | `"PP-OCRv5"` (default) or `"PP-OCRv6"` |
-| `worker` | `boolean \| { createWorker?: () => Worker }` | Run in Web Worker |
-| `pipelineConfig` | `string \| object` | YAML or parsed config object |
-| `ortOptions` | `object` | ONNX Runtime options (`backend`, `wasmPaths`, `numThreads`, etc.) |
-| `textDetectionModelName` | `string` | Override detection model |
-| `textRecognitionModelName` | `string` | Override recognition model |
-| `docOrientationModelName` | `string` | Enable document orientation classification |
-| `docUnwarpingModelName` | `string` | Enable document unwarping |
-| `textLineOrientationModelName` | `string` | Enable text line orientation classification |
-| `textDetectionBatchSize` | `number` | Detection batch size |
-| `textRecognitionBatchSize` | `number` | Recognition batch size |
-| `textLineOrientationBatchSize` | `number` | Text line orientation batch size |
-| `textDetLimitSideLen` | `number` | Detection input side length limit |
-| `textDetThresh` | `number` | Detection score threshold |
-| `textDetBoxThresh` | `number` | Detection box threshold |
-| `textDetUnclipRatio` | `number` | Detection unclip ratio |
-| `textRecScoreThresh` | `number` | Recognition score threshold |
+| Option                         | Type                                         | Description                                                       |
+| ------------------------------ | -------------------------------------------- | ----------------------------------------------------------------- |
+| `lang`                         | `string`                                     | Language code, e.g. `"ch"`, `"en"`, `"japan"`                     |
+| `ocrVersion`                   | `string`                                     | `"PP-OCRv5"` (default) or `"PP-OCRv6"`                            |
+| `worker`                       | `boolean \| { createWorker?: () => Worker }` | Run in Web Worker                                                 |
+| `pipelineConfig`               | `string \| object`                           | YAML or parsed config object                                      |
+| `ortOptions`                   | `object`                                     | ONNX Runtime options (`backend`, `wasmPaths`, `numThreads`, etc.) |
+| `textDetectionModelName`       | `string`                                     | Override detection model                                          |
+| `textRecognitionModelName`     | `string`                                     | Override recognition model                                        |
+| `docOrientationModelName`      | `string`                                     | Enable document orientation classification                        |
+| `docUnwarpingModelName`        | `string`                                     | Enable document unwarping                                         |
+| `textLineOrientationModelName` | `string`                                     | Enable text line orientation classification                       |
+| `textDetectionBatchSize`       | `number`                                     | Detection batch size                                              |
+| `textRecognitionBatchSize`     | `number`                                     | Recognition batch size                                            |
+| `textLineOrientationBatchSize` | `number`                                     | Text line orientation batch size                                  |
+| `textDetLimitSideLen`          | `number`                                     | Detection input side length limit                                 |
+| `textDetThresh`                | `number`                                     | Detection score threshold                                         |
+| `textDetBoxThresh`             | `number`                                     | Detection box threshold                                           |
+| `textDetUnclipRatio`           | `number`                                     | Detection unclip ratio                                            |
+| `textRecScoreThresh`           | `number`                                     | Recognition score threshold                                       |
 
 ## Package Layout
 

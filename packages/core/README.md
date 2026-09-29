@@ -253,6 +253,33 @@ Worker behavior:
 - Browser inputs are normalized on the main thread and transferred into the worker before inference runs.
 - `cv.Mat` is only supported in the direct main-thread pipeline path.
 
+### ONNX Runtime version alignment
+
+The two execution modes obtain ONNX Runtime differently, and the versions must match:
+
+- **main thread** — `onnxruntime-web` is a normal dependency of your app, so your installed version is used and your bundler emits the matching `.wasm` files.
+- **worker** — ORT's JS glue is bundled into the package worker at SDK build time, and the `.wasm` binaries come from `ortOptions.wasmPaths` if set, otherwise from a CDN pinned to that same build-time version.
+
+`INLINED_ORT_VERSION` is exported so you can compare the two instead of guessing:
+
+```js
+import { INLINED_ORT_VERSION } from "@uzen/paddleocr-js";
+
+// null when the SDK was consumed from source without the build-time define
+console.log(INLINED_ORT_VERSION); // e.g. "1.24.3"
+```
+
+A mismatch surfaces late and without mentioning versions — typically as an opaque WASM instantiation failure — so if you use worker mode, pin your `onnxruntime-web` to `INLINED_ORT_VERSION` and point `ortOptions.wasmPaths` at binaries copied from that version:
+
+```js
+await PaddleOCR.create({
+  worker: true,
+  ortOptions: { wasmPaths: "/assets/" } // ORT WASM from your pinned version
+});
+```
+
+If `wasmPaths` is unset in worker mode the SDK falls back to a version-pinned CDN and logs a warning naming the required version.
+
 ## Visualization
 
 The optional `@uzen/paddleocr-js/viz` subpath provides visualization utilities for rendering OCR results as images.
@@ -300,6 +327,7 @@ The viz module renders a side-by-side composite image: the original image with d
 - `ocr.dispose()`
 - `parseOcrPipelineConfigText(text)`
 - `normalizeOcrPipelineConfig(config)`
+- `INLINED_ORT_VERSION` ( `string | null` — see [ONNX Runtime version alignment](#onnx-runtime-version-alignment))
 - `OcrVisualizer` ( from `@uzen/paddleocr-js/viz`)
 - `renderOcrToBlob` ( from `@uzen/paddleocr-js/viz`)
 - `deterministicColor` ( from `@uzen/paddleocr-js/viz`)

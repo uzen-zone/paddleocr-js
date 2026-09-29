@@ -7,6 +7,7 @@ vi.mock("@techstark/opencv-js", () => ({
 }));
 
 import { PaddleOCR, normalizeOcrPipelineConfig, parseOcrPipelineConfigText } from "../src/index";
+import type { PaddleOCRCreateOptions } from "../src/pipelines/ocr/index";
 import { extractInferenceModelName } from "../src/models/common";
 import { DEFAULT_OCR_PIPELINE_CONFIG_TEXT } from "../src/pipelines/ocr/default-config";
 import { normalizeOrtOptions } from "../src/pipelines/ocr/shared";
@@ -163,6 +164,51 @@ describe("PaddleOCR high-level API", () => {
       expect(ocr).toBeInstanceOf(PaddleOCR);
     } finally {
       initializeSpy.mockRestore();
+    }
+  });
+
+  it("accepts snake_case model asset aliases for every model role", async () => {
+    // The asset alias matrix was asymmetric: *ModelAsset existed only in
+    // camelCase, while *ModelDir existed in both camelCase and snake_case.
+    // These five snake_case asset aliases were accepted by the index signature
+    // and then silently ignored, so a PaddleOCR-style config did nothing.
+    const cases = [
+      { assetKey: "text_detection_model_asset", nameKey: "text_detection_model_name", role: "det" },
+      {
+        assetKey: "text_recognition_model_asset",
+        nameKey: "text_recognition_model_name",
+        role: "rec"
+      },
+      {
+        assetKey: "doc_orientation_model_asset",
+        nameKey: "doc_orientation_model_name",
+        role: "docOri"
+      },
+      {
+        assetKey: "doc_unwarping_model_asset",
+        nameKey: "doc_unwarping_model_name",
+        role: "docUnwarp"
+      },
+      {
+        assetKey: "textline_orientation_model_asset",
+        nameKey: "textline_orientation_model_name",
+        role: "textLineOri"
+      }
+    ];
+
+    for (const testCase of cases) {
+      // The index signature is gone, so computed keys need an explicit cast.
+      const ocr = await PaddleOCR.create({
+        lang: "ch",
+        ocrVersion: "PP-OCRv5",
+        [testCase.nameKey]: "custom_model",
+        [testCase.assetKey]: { url: "https://example.com/custom.tar" },
+        ...IGNORE_UNSUPPORTED
+      } as PaddleOCRCreateOptions);
+
+      expect(ocr.options.pipelineConfig.assets[testCase.role]?.url).toBe(
+        "https://example.com/custom.tar"
+      );
     }
   });
 

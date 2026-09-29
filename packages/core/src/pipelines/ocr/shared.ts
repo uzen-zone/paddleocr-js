@@ -143,6 +143,7 @@ const OCR_MODEL_ROLES: Readonly<ModelRole[]> = Object.freeze([
     nameAliases: ["doc_orientation_model_name", "docOrientationModelName"],
     assetAliases: [
       "docOrientationModelAsset",
+      "doc_orientation_model_asset",
       "doc_orientation_model_dir",
       "docOrientationModelDir"
     ],
@@ -155,7 +156,12 @@ const OCR_MODEL_ROLES: Readonly<ModelRole[]> = Object.freeze([
     modelRole: "DocUnwarping",
     selectionKey: "docUnwarpingModelName",
     nameAliases: ["doc_unwarping_model_name", "docUnwarpingModelName"],
-    assetAliases: ["docUnwarpingModelAsset", "doc_unwarping_model_dir", "docUnwarpingModelDir"],
+    assetAliases: [
+      "docUnwarpingModelAsset",
+      "doc_unwarping_model_asset",
+      "doc_unwarping_model_dir",
+      "docUnwarpingModelDir"
+    ],
     nameLabel: "document unwarping model name",
     assetLabel: "document unwarping model asset",
     assetRequirementError: "doc_unwarping_model_dir requires doc_unwarping_model_name."
@@ -165,7 +171,12 @@ const OCR_MODEL_ROLES: Readonly<ModelRole[]> = Object.freeze([
     modelRole: "TextDetection",
     selectionKey: "textDetectionModelName",
     nameAliases: ["text_detection_model_name", "textDetectionModelName"],
-    assetAliases: ["textDetectionModelAsset", "text_detection_model_dir", "textDetectionModelDir"],
+    assetAliases: [
+      "textDetectionModelAsset",
+      "text_detection_model_asset",
+      "text_detection_model_dir",
+      "textDetectionModelDir"
+    ],
     nameLabel: "text detection model name",
     assetLabel: "text detection model asset",
     assetRequirementError: "text_detection_model_dir requires text_detection_model_name."
@@ -177,6 +188,7 @@ const OCR_MODEL_ROLES: Readonly<ModelRole[]> = Object.freeze([
     nameAliases: ["textline_orientation_model_name", "textLineOrientationModelName"],
     assetAliases: [
       "textLineOrientationModelAsset",
+      "textline_orientation_model_asset",
       "textline_orientation_model_dir",
       "textLineOrientationModelDir"
     ],
@@ -192,6 +204,7 @@ const OCR_MODEL_ROLES: Readonly<ModelRole[]> = Object.freeze([
     nameAliases: ["text_recognition_model_name", "textRecognitionModelName"],
     assetAliases: [
       "textRecognitionModelAsset",
+      "text_recognition_model_asset",
       "text_recognition_model_dir",
       "textRecognitionModelDir"
     ],

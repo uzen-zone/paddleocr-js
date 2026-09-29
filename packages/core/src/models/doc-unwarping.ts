@@ -31,10 +31,9 @@ export interface DocUnwarpingModel {
   dispose(): Promise<void>;
 }
 
-export const DEFAULT_DOC_UNWARPING_MODEL_CONFIG: Readonly<DocUnwarpingModelConfig> =
-  Object.freeze({
-    maxSideLen: 0
-  });
+export const DEFAULT_DOC_UNWARPING_MODEL_CONFIG: Readonly<DocUnwarpingModelConfig> = Object.freeze({
+  maxSideLen: 0
+});
 
 interface CreateDocUnwarpingModelArgs {
   ort: OrtModule;
@@ -140,7 +139,8 @@ function preprocess(
   const srcW = sourceMat.cols;
   const srcH = sourceMat.rows;
   const maxSide = Math.max(srcW, srcH);
-  const scale = config.maxSideLen > 0 && maxSide > config.maxSideLen ? config.maxSideLen / maxSide : 1;
+  const scale =
+    config.maxSideLen > 0 && maxSide > config.maxSideLen ? config.maxSideLen / maxSide : 1;
   const width = Math.max(1, Math.round(srcW * scale));
   const height = Math.max(1, Math.round(srcH * scale));
   const resized = new cv.Mat();

@@ -6,10 +6,10 @@ Official browser OCR SDK and demo for PaddleOCR.
 
 ## Project structure
 
-| Path             | Role                                                                   |
-| ---------------- | ---------------------------------------------------------------------- |
+| Path             | Role                                                              |
+| ---------------- | ----------------------------------------------------------------- |
 | `packages/core/` | Browser SDK sources; published to npm as **`@uzen/paddleocr-js`** |
-| `demo/`          | Vite demo app that depends on the SDK                                  |
+| `demo/`          | Vite demo app that depends on the SDK                             |
 
 ## Features
 
@@ -56,12 +56,12 @@ npm run check
 
 ## Documentation
 
-| Topic | Link |
-|-------|------|
-| Architecture | [architecture.md](docs/architecture.md) |
-| Development | [development.md](docs/development.md) |
-| Monorepo conventions | [monorepo.md](docs/monorepo.md) |
-| SDK package README | [packages/core/README.md](packages/core/README.md) |
+| Topic                | Link                                               |
+| -------------------- | -------------------------------------------------- |
+| Architecture         | [architecture.md](docs/architecture.md)            |
+| Development          | [development.md](docs/development.md)              |
+| Monorepo conventions | [monorepo.md](docs/monorepo.md)                    |
+| SDK package README   | [packages/core/README.md](packages/core/README.md) |
 
 ## Acknowledgements
 

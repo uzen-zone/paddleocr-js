@@ -285,8 +285,12 @@ describe("PaddleOCR high-level API", () => {
       ...CREATE_WITHOUT_INIT
     });
 
-    expect(ocr.options.pipelineConfig.assets.det?.url).toMatch(/PP-OCRv6_tiny_det_onnx_infer\.tar$/);
-    expect(ocr.options.pipelineConfig.assets.rec?.url).toMatch(/PP-OCRv6_tiny_rec_onnx_infer\.tar$/);
+    expect(ocr.options.pipelineConfig.assets.det?.url).toMatch(
+      /PP-OCRv6_tiny_det_onnx_infer\.tar$/
+    );
+    expect(ocr.options.pipelineConfig.assets.rec?.url).toMatch(
+      /PP-OCRv6_tiny_rec_onnx_infer\.tar$/
+    );
   });
 
   it("allows overriding model selection via model_name options", async () => {

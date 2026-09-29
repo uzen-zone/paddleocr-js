@@ -6,10 +6,7 @@ export default defineConfig(({ command }) => ({
     alias:
       command === "serve"
         ? {
-            "@uzen/paddleocr-js/viz": resolve(
-              __dirname,
-              "../packages/core/src/viz/index.ts"
-            ),
+            "@uzen/paddleocr-js/viz": resolve(__dirname, "../packages/core/src/viz/index.ts"),
             "@uzen/paddleocr-js": resolve(__dirname, "../packages/core/src/index.ts")
           }
         : {}

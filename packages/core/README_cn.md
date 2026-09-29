@@ -27,7 +27,7 @@ const [result] = await ocr.predict(fileOrBlob);
 console.log(result.items);
 ```
 
-`predict` 返回 **`OcrResult` 组成的数组**（每张输入图像对应一项）。传入单个 `Blob` / `File` 时也会得到长度为 1 的数组，请使用解构或 `results[0]` 取值。
+`predict` 传入图像数组时返回 **`OcrResult` 组成的数组**（每张输入图像对应一项），传入单个图像时返回**单个** `OcrResult`。返回形态与输入形态一致，因此常见的单图调用无需解包。
 
 ## 构造方式
 
@@ -198,7 +198,7 @@ const ocr = await PaddleOCR.create({ pipelineConfig });
 
 ### 返回值
 
-返回 `Promise<OcrResult[]>`。每个 `OcrResult` 包含：
+返回形态与输入形态一致：传入单个图像时返回单个 `OcrResult`，传入图像数组时返回与输入等长、顺序一致的 `OcrResult` 数组。每个 `OcrResult` 包含：
 
 - `image`：该图源的尺寸 `{ width, height }`
 - `items`：识别行（`poly`、`text`、`score`、可选 `textLineOrientation`）
@@ -211,7 +211,7 @@ const ocr = await PaddleOCR.create({ pipelineConfig });
 访问预处理结果的示例：
 
 ```js
-const [result] = await ocr.predict(image);
+const result = await ocr.predict(image);
 
 // 文档方向
 if (result.preprocessing?.docOrientation) {
@@ -287,7 +287,7 @@ const blob = await renderOcrToBlob(imageBitmap, result, {
 });
 ```
 
-viz 模块会渲染一张左右对比的合成图像：左侧为带有检测框叠加的原始图像，右侧为识别出的文字。支持加载自定义字体以正确渲染中日韩等文字。可视化需传入**单个** `OcrResult`（单张图时取 `predict` 返回数组的首项，例如 `const [result] = await ocr.predict(image)`）。
+viz 模块会渲染一张左右对比的合成图像：左侧为带有检测框叠加的原始图像，右侧为识别出的文字。支持加载自定义字体以正确渲染中日韩等文字。可视化需传入**单个** `OcrResult` —— 向 `predict` 传入单个图像即可直接拿到。
 
 `deterministicColor(index)` 同样从 viz 子路径导出。它根据数字索引生成稳定的 RGB 颜色，内部用作检测框和文字标签的默认配色函数。当你构建自定义可视化并需要与内置渲染器保持一致的配色时，可以直接调用该函数。
 
@@ -296,7 +296,7 @@ viz 模块会渲染一张左右对比的合成图像：左侧为带有检测框�
 - `PaddleOCR.create(options)` — 见上方[构造方式](#构造方式)
 - `ocr.initialize()`
 - `ocr.getInitializationSummary()`
-- `ocr.predict(image | images[], params?)` → `Promise<OcrResult[]>`
+- `ocr.predict(image | images[], params?)` → 单个图像返回 `Promise<OcrResult>`，数组返回 `Promise<OcrResult[]>`
 - `ocr.dispose()`
 - `parseOcrPipelineConfigText(text)`
 - `normalizeOcrPipelineConfig(config)`

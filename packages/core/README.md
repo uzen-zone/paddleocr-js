@@ -27,7 +27,7 @@ const [result] = await ocr.predict(fileOrBlob);
 console.log(result.items);
 ```
 
-`predict` resolves to an **array** of `OcrResult` (one per input image). A single `Blob` / `File` still produces a one-element array—use destructuring or `results[0]`.
+`predict` resolves to an **array** of `OcrResult` (one per input image) when given an array of images, and to a **single** `OcrResult` when given a single image. The return shape mirrors the input shape, so the common single-image call needs no unwrapping.
 
 ## Construction Options
 
@@ -198,7 +198,7 @@ In worker mode (see next section), `cv.Mat` is not transferable and is therefore
 
 ### Return value
 
-Resolves to `Promise<OcrResult[]>`. Each `OcrResult` contains:
+The return shape mirrors the input shape: a single image resolves to a single `OcrResult`, an array of images resolves to one `OcrResult` per element, in order. Each `OcrResult` contains:
 
 - `image`: `{ width, height }` for that source
 - `items`: recognized lines (`poly`, `text`, `score`, optional `textLineOrientation`)
@@ -211,7 +211,7 @@ Resolves to `Promise<OcrResult[]>`. Each `OcrResult` contains:
 Example accessing preprocessing results:
 
 ```js
-const [result] = await ocr.predict(image);
+const result = await ocr.predict(image);
 
 // Document orientation
 if (result.preprocessing?.docOrientation) {
@@ -287,7 +287,7 @@ const blob = await renderOcrToBlob(imageBitmap, result, {
 });
 ```
 
-The viz module renders a side-by-side composite image: the original image with detection box overlays on the left, and recognized text on the right. Custom fonts can be loaded for CJK text rendering. Visualization requires a **single** `OcrResult` (for one image, take the first element of the array returned by `predict`, e.g. `const [result] = await ocr.predict(image)`).
+The viz module renders a side-by-side composite image: the original image with detection box overlays on the left, and recognized text on the right. Custom fonts can be loaded for CJK text rendering. Visualization requires a **single** `OcrResult` — pass a single image to `predict` and you get one back directly.
 
 `deterministicColor(index)` is also exported from the viz subpath. It maps a numeric index to a stable RGB color and is used internally as the default color function for detection boxes and text labels. You can call it directly when building custom visualizations that need colors consistent with the built-in renderer.
 
@@ -296,7 +296,7 @@ The viz module renders a side-by-side composite image: the original image with d
 - `PaddleOCR.create(options)` — see [Construction Options](#construction-options) above
 - `ocr.initialize()`
 - `ocr.getInitializationSummary()`
-- `ocr.predict(image | images[], params?)` → `Promise<OcrResult[]>`
+- `ocr.predict(image | images[], params?)` → `Promise<OcrResult>` for a single image, `Promise<OcrResult[]>` for an array
 - `ocr.dispose()`
 - `parseOcrPipelineConfigText(text)`
 - `normalizeOcrPipelineConfig(config)`

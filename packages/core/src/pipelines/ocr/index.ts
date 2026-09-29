@@ -39,18 +39,23 @@ export interface PaddleOCRCreateOptions {
   textline_orientation_model_name?: string;
 
   textDetectionModelAsset?: ModelAsset;
+  text_detection_model_asset?: ModelAsset;
   textDetectionModelDir?: ModelAsset;
   text_detection_model_dir?: ModelAsset;
   textRecognitionModelAsset?: ModelAsset;
+  text_recognition_model_asset?: ModelAsset;
   textRecognitionModelDir?: ModelAsset;
   text_recognition_model_dir?: ModelAsset;
   docOrientationModelAsset?: ModelAsset;
+  doc_orientation_model_asset?: ModelAsset;
   docOrientationModelDir?: ModelAsset;
   doc_orientation_model_dir?: ModelAsset;
   docUnwarpingModelAsset?: ModelAsset;
+  doc_unwarping_model_asset?: ModelAsset;
   docUnwarpingModelDir?: ModelAsset;
   doc_unwarping_model_dir?: ModelAsset;
   textLineOrientationModelAsset?: ModelAsset;
+  textline_orientation_model_asset?: ModelAsset;
   textLineOrientationModelDir?: ModelAsset;
   textline_orientation_model_dir?: ModelAsset;
 

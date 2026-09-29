@@ -29,6 +29,21 @@ console.log(result.items);
 
 `predict` 返回 **`OcrResult` 组成的数组**（每张输入图像对应一项）。传入单个 `Blob` / `File` 时也会得到长度为 1 的数组，请使用解构或 `results[0]` 取值。
 
+### 初始化是即时的
+
+`create()` 会先 `await initialize()` 再返回，因此首次调用会下载并打开 ONNX 模型。默认语言下大约 21 MB，冷缓存时可能需要几十秒。首次 `create()` 较慢属于正常现象，不是卡死。
+
+传入 `initialize: false` 可以立即拿到实例，由你自己启动初始化 —— 适合推迟到用户选好图片后再加载模型，或用于驱动加载指示器：
+
+```js
+const ocr = await PaddleOCR.create({ lang: "ch", initialize: false });
+const ready = ocr.initialize(); // 开始下载
+await whenTheUserPicksAnImage();
+await ready;
+```
+
+`initialize()` 是幂等的，可以多次 `await`，使用方无需自行维护初始化状态。
+
 ## 构造方式
 
 主要有两种构造方式：
@@ -311,6 +326,7 @@ viz 模块会渲染一张左右对比的合成图像：左侧为带有检测框�
 | `lang` | `string` | 语言代码，如 `"ch"`、`"en"`、`"japan"` |
 | `ocrVersion` | `string` | `"PP-OCRv5"`（默认）或 `"PP-OCRv6"` |
 | `worker` | `boolean \| { createWorker?: () => Worker }` | 在 Web Worker 中运行 |
+| `initialize` | `boolean` | `create()` 内部是否 `await initialize()`。默认 `true`；传 `false` 可推迟模型加载 |
 | `pipelineConfig` | `string \| object` | YAML 或解析后的配置对象 |
 | `ortOptions` | `object` | ONNX Runtime 选项（`backend`、`wasmPaths`、`numThreads` 等） |
 | `textDetectionModelName` | `string` | 覆盖检测模型 |

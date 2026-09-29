@@ -5,6 +5,7 @@
 
 import { sourceToWorkerPayload } from "../../platform/browser";
 import type { ImageSource } from "../../platform/browser";
+import { INLINED_ORT_VERSION } from "../../runtime/ort-version";
 import { createWorkerTransportClient } from "../../worker/client";
 import type { WorkerTransportClient, WorkerOptions } from "../../worker/client";
 import type { OcrModelConfig, OcrRuntimeParamsInput } from "./runtime-params";
@@ -55,10 +56,13 @@ export class WorkerBackedPaddleOCR {
       if (ortOpts["wasmPaths"] === undefined && typeof __ORT_WASM_CDN_PREFIX__ === "string") {
         console.warn(
           "[PaddleOCR.js] Worker mode: ortOptions.wasmPaths is not set — falling back to CDN (%s). " +
-            "For version consistency between main thread and worker, set ortOptions.wasmPaths " +
-            "to the path where your bundler outputs the onnxruntime-web WASM files " +
-            '(e.g. ortOptions: { wasmPaths: "/assets/" }).',
-          __ORT_WASM_CDN_PREFIX__
+            "The worker runs onnxruntime-web %s inlined, while the main thread resolves " +
+            "onnxruntime-web from your node_modules; the two should match. Install that version and " +
+            "set ortOptions.wasmPaths to the path where your bundler outputs the ORT WASM files " +
+            '(e.g. ortOptions: { wasmPaths: "/assets/" }). The version is exported as ' +
+            "INLINED_ORT_VERSION.",
+          __ORT_WASM_CDN_PREFIX__,
+          INLINED_ORT_VERSION ?? "of an unknown version"
         );
       }
       const wasmCdnFallback =

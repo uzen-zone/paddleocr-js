@@ -143,6 +143,7 @@ const OCR_MODEL_ROLES: Readonly<ModelRole[]> = Object.freeze([
     nameAliases: ["doc_orientation_model_name", "docOrientationModelName"],
     assetAliases: [
       "docOrientationModelAsset",
+      "doc_orientation_model_asset",
       "doc_orientation_model_dir",
       "docOrientationModelDir"
     ],
@@ -155,7 +156,12 @@ const OCR_MODEL_ROLES: Readonly<ModelRole[]> = Object.freeze([
     modelRole: "DocUnwarping",
     selectionKey: "docUnwarpingModelName",
     nameAliases: ["doc_unwarping_model_name", "docUnwarpingModelName"],
-    assetAliases: ["docUnwarpingModelAsset", "doc_unwarping_model_dir", "docUnwarpingModelDir"],
+    assetAliases: [
+      "docUnwarpingModelAsset",
+      "doc_unwarping_model_asset",
+      "doc_unwarping_model_dir",
+      "docUnwarpingModelDir"
+    ],
     nameLabel: "document unwarping model name",
     assetLabel: "document unwarping model asset",
     assetRequirementError: "doc_unwarping_model_dir requires doc_unwarping_model_name."
@@ -165,7 +171,12 @@ const OCR_MODEL_ROLES: Readonly<ModelRole[]> = Object.freeze([
     modelRole: "TextDetection",
     selectionKey: "textDetectionModelName",
     nameAliases: ["text_detection_model_name", "textDetectionModelName"],
-    assetAliases: ["textDetectionModelAsset", "text_detection_model_dir", "textDetectionModelDir"],
+    assetAliases: [
+      "textDetectionModelAsset",
+      "text_detection_model_asset",
+      "text_detection_model_dir",
+      "textDetectionModelDir"
+    ],
     nameLabel: "text detection model name",
     assetLabel: "text detection model asset",
     assetRequirementError: "text_detection_model_dir requires text_detection_model_name."
@@ -177,12 +188,14 @@ const OCR_MODEL_ROLES: Readonly<ModelRole[]> = Object.freeze([
     nameAliases: ["textline_orientation_model_name", "textLineOrientationModelName"],
     assetAliases: [
       "textLineOrientationModelAsset",
+      "textline_orientation_model_asset",
       "textline_orientation_model_dir",
       "textLineOrientationModelDir"
     ],
     nameLabel: "text line orientation model name",
     assetLabel: "text line orientation model asset",
-    assetRequirementError: "textline_orientation_model_dir requires textline_orientation_model_name."
+    assetRequirementError:
+      "textline_orientation_model_dir requires textline_orientation_model_name."
   },
   {
     assetKey: "rec",
@@ -191,6 +204,7 @@ const OCR_MODEL_ROLES: Readonly<ModelRole[]> = Object.freeze([
     nameAliases: ["text_recognition_model_name", "textRecognitionModelName"],
     assetAliases: [
       "textRecognitionModelAsset",
+      "text_recognition_model_asset",
       "text_recognition_model_dir",
       "textRecognitionModelDir"
     ],
@@ -681,7 +695,125 @@ export function resolveWorkerOptions(workerOption: unknown): WorkerResolvedOptio
   throw new Error("worker must be a boolean or an options object.");
 }
 
+/**
+ * Every key `PaddleOCRCreateOptions` accepts.
+ *
+ * The runtime check below is the JavaScript-side counterpart to the TypeScript
+ * index signature removal (#15): a TS caller gets a compile error naming the
+ * intended key, but a JS caller previously got a silent no-op. Keeping this
+ * list in sync with the interface is what makes the check meaningful -- a key
+ * missing here would throw for a legitimate option.
+ */
+const KNOWN_CREATE_OPTION_KEYS: ReadonlySet<string> = new Set([
+  "worker",
+  "fetch",
+  "initialize",
+  "ortOptions",
+  "pipelineConfig",
+  "unsupportedBehavior",
+  "lang",
+  "ocrVersion",
+  "ocr_version",
+  "textDetectionModelName",
+  "text_detection_model_name",
+  "textRecognitionModelName",
+  "text_recognition_model_name",
+  "docOrientationModelName",
+  "doc_orientation_model_name",
+  "docUnwarpingModelName",
+  "doc_unwarping_model_name",
+  "textLineOrientationModelName",
+  "textline_orientation_model_name",
+  "textDetectionModelAsset",
+  "text_detection_model_asset",
+  "textDetectionModelDir",
+  "text_detection_model_dir",
+  "textRecognitionModelAsset",
+  "text_recognition_model_asset",
+  "textRecognitionModelDir",
+  "text_recognition_model_dir",
+  "docOrientationModelAsset",
+  "doc_orientation_model_asset",
+  "docOrientationModelDir",
+  "doc_orientation_model_dir",
+  "docUnwarpingModelAsset",
+  "doc_unwarping_model_asset",
+  "docUnwarpingModelDir",
+  "doc_unwarping_model_dir",
+  "textLineOrientationModelAsset",
+  "textline_orientation_model_asset",
+  "textLineOrientationModelDir",
+  "textline_orientation_model_dir",
+  "textDetectionBatchSize",
+  "text_detection_batch_size",
+  "textRecognitionBatchSize",
+  "text_recognition_batch_size",
+  "textLineOrientationBatchSize",
+  "textline_orientation_batch_size",
+  "batch_size",
+  "textDetLimitSideLen",
+  "text_det_limit_side_len",
+  "textDetLimitType",
+  "text_det_limit_type",
+  "textDetMaxSideLimit",
+  "text_det_max_side_limit",
+  "textDetThresh",
+  "text_det_thresh",
+  "textDetBoxThresh",
+  "text_det_box_thresh",
+  "textDetUnclipRatio",
+  "text_det_unclip_ratio",
+  "textRecScoreThresh",
+  "text_rec_score_thresh"
+]);
+
+function levenshteinDistance(a: string, b: string): number {
+  const previous: number[] = [];
+  const current: number[] = [];
+  for (let j = 0; j <= b.length; j += 1) previous[j] = j;
+  for (let i = 1; i <= a.length; i += 1) {
+    current[0] = i;
+    for (let j = 1; j <= b.length; j += 1) {
+      const substitution = previous[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1);
+      current[j] = Math.min(previous[j] + 1, current[j - 1] + 1, substitution);
+    }
+    for (let j = 0; j <= b.length; j += 1) previous[j] = current[j];
+  }
+  return previous[b.length];
+}
+
+/**
+ * Finds the closest known key, or null when nothing is close enough for a
+ * suggestion to be useful. Without this the caller has to guess from a list of
+ * fifty keys; with it, a one-character typo is fixed by reading the message.
+ */
+function suggestCreateOptionKey(unknownKey: string): string | null {
+  let best: string | null = null;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const key of KNOWN_CREATE_OPTION_KEYS) {
+    const distance = levenshteinDistance(unknownKey, key);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = key;
+    }
+  }
+  const threshold = Math.max(3, Math.floor(unknownKey.length / 2));
+  return best !== null && bestDistance <= threshold ? best : null;
+}
+
+function assertKnownCreateOptions(options: Record<string, unknown>): void {
+  for (const key of Object.keys(options)) {
+    if (KNOWN_CREATE_OPTION_KEYS.has(key)) continue;
+    const suggestion = suggestCreateOptionKey(key);
+    throw new Error(
+      `Unknown PaddleOCRCreateOptions key: "${key}".` +
+        (suggestion ? ` Did you mean "${suggestion}"?` : "")
+    );
+  }
+}
+
 export function resolvePaddleOCROptions(options: Record<string, unknown> = {}): ResolvedOcrOptions {
+  assertKnownCreateOptions(options);
   return {
     pipelineConfig: resolveConstructionOptions(options),
     ortOptions: normalizeOrtOptions((options.ortOptions || {}) as OrtOptions)

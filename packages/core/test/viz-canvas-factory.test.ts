@@ -14,7 +14,11 @@ describe("viz/canvas-factory", () => {
 
   it("returns an OffscreenCanvas when available", () => {
     const mockCanvas = { width: 0, height: 0, getContext: vi.fn() };
-    (globalThis as Record<string, unknown>).OffscreenCanvas = vi.fn(function (this: unknown, w: number, h: number) {
+    (globalThis as Record<string, unknown>).OffscreenCanvas = vi.fn(function (
+      this: unknown,
+      w: number,
+      h: number
+    ) {
       mockCanvas.width = w;
       mockCanvas.height = h;
       return mockCanvas;

@@ -83,10 +83,10 @@ await PaddleOCR.create({
 
 三个可选的预处理阶段可提升识别质量：
 
-| 阶段 | 模型名 | 说明 |
-|------|--------|------|
-| 文档方向分类 | `PP-LCNet_x1_0_doc_ori` | 判断文档角度（0°/90°/180°/270°）并自动旋转 |
-| 文档去歪曲 | `UVDoc` | 校正透视畸变和页面弯曲 |
+| 阶段           | 模型名                       | 说明                                          |
+| -------------- | ---------------------------- | --------------------------------------------- |
+| 文档方向分类   | `PP-LCNet_x1_0_doc_ori`      | 判断文档角度（0°/90°/180°/270°）并自动旋转    |
+| 文档去歪曲     | `UVDoc`                      | 校正透视畸变和页面弯曲                        |
 | 文本行方向分类 | `PP-LCNet_x1_0_textline_ori` | 判断每行文本方向（0°/180°），识别前翻转倒置行 |
 
 通过传入对应的模型名启用：
@@ -306,26 +306,26 @@ viz 模块会渲染一张左右对比的合成图像：左侧为带有检测框�
 
 ### 构造参数一览
 
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| `lang` | `string` | 语言代码，如 `"ch"`、`"en"`、`"japan"` |
-| `ocrVersion` | `string` | `"PP-OCRv5"`（默认）或 `"PP-OCRv6"` |
-| `worker` | `boolean \| { createWorker?: () => Worker }` | 在 Web Worker 中运行 |
-| `pipelineConfig` | `string \| object` | YAML 或解析后的配置对象 |
-| `ortOptions` | `object` | ONNX Runtime 选项（`backend`、`wasmPaths`、`numThreads` 等） |
-| `textDetectionModelName` | `string` | 覆盖检测模型 |
-| `textRecognitionModelName` | `string` | 覆盖识别模型 |
-| `docOrientationModelName` | `string` | 启用文档方向分类 |
-| `docUnwarpingModelName` | `string` | 启用文档去歪曲 |
-| `textLineOrientationModelName` | `string` | 启用文本行方向分类 |
-| `textDetectionBatchSize` | `number` | 检测批处理大小 |
-| `textRecognitionBatchSize` | `number` | 识别批处理大小 |
-| `textLineOrientationBatchSize` | `number` | 文本行方向分类批处理大小 |
-| `textDetLimitSideLen` | `number` | 检测输入边长限制 |
-| `textDetThresh` | `number` | 检测置信度阈值 |
-| `textDetBoxThresh` | `number` | 检测框阈值 |
-| `textDetUnclipRatio` | `number` | 检测 unclip 比率 |
-| `textRecScoreThresh` | `number` | 识别置信度阈值 |
+| 参数                           | 类型                                         | 说明                                                         |
+| ------------------------------ | -------------------------------------------- | ------------------------------------------------------------ |
+| `lang`                         | `string`                                     | 语言代码，如 `"ch"`、`"en"`、`"japan"`                       |
+| `ocrVersion`                   | `string`                                     | `"PP-OCRv5"`（默认）或 `"PP-OCRv6"`                          |
+| `worker`                       | `boolean \| { createWorker?: () => Worker }` | 在 Web Worker 中运行                                         |
+| `pipelineConfig`               | `string \| object`                           | YAML 或解析后的配置对象                                      |
+| `ortOptions`                   | `object`                                     | ONNX Runtime 选项（`backend`、`wasmPaths`、`numThreads` 等） |
+| `textDetectionModelName`       | `string`                                     | 覆盖检测模型                                                 |
+| `textRecognitionModelName`     | `string`                                     | 覆盖识别模型                                                 |
+| `docOrientationModelName`      | `string`                                     | 启用文档方向分类                                             |
+| `docUnwarpingModelName`        | `string`                                     | 启用文档去歪曲                                               |
+| `textLineOrientationModelName` | `string`                                     | 启用文本行方向分类                                           |
+| `textDetectionBatchSize`       | `number`                                     | 检测批处理大小                                               |
+| `textRecognitionBatchSize`     | `number`                                     | 识别批处理大小                                               |
+| `textLineOrientationBatchSize` | `number`                                     | 文本行方向分类批处理大小                                     |
+| `textDetLimitSideLen`          | `number`                                     | 检测输入边长限制                                             |
+| `textDetThresh`                | `number`                                     | 检测置信度阈值                                               |
+| `textDetBoxThresh`             | `number`                                     | 检测框阈值                                                   |
+| `textDetUnclipRatio`           | `number`                                     | 检测 unclip 比率                                             |
+| `textRecScoreThresh`           | `number`                                     | 识别置信度阈值                                               |
 
 ## 包结构
 

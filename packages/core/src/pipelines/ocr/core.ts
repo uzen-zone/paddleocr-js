@@ -221,9 +221,8 @@ export class OcrPipelineRunner {
     const textLineOriAsset = shouldLoadTextLineOrientation
       ? loadedAssets[(docOriAsset ? 2 : 1) + (docUnwarpAsset ? 1 : 0)]
       : null;
-    const recAsset = loadedAssets[
-      (docOriAsset ? 2 : 1) + (docUnwarpAsset ? 1 : 0) + (textLineOriAsset ? 1 : 0)
-    ];
+    const recAsset =
+      loadedAssets[(docOriAsset ? 2 : 1) + (docUnwarpAsset ? 1 : 0) + (textLineOriAsset ? 1 : 0)];
     if (docOriAsset) {
       validateLoadedModelName(
         "DocOrientationClassify",
@@ -259,58 +258,53 @@ export class OcrPipelineRunner {
     const textLineOriBatchSize = this.pipelineConfig.textLineOrientationBatchSize;
     const recBatchSize = this.pipelineConfig.textRecognitionBatchSize;
 
-    const [
-      docOrientationModel,
-      docUnwarpingModel,
-      detModel,
-      textLineOrientationModel,
-      recModel
-    ] = await Promise.all([
-      docOriAsset
-        ? createDocOrientationModel({
-            ort: this.ort,
-            modelBytes: docOriAsset.modelBytes,
-            configText: docOriAsset.configText,
-            backend,
-            webgpuState
-          })
-        : Promise.resolve(null),
-      docUnwarpAsset
-        ? createDocUnwarpingModel({
-            ort: this.ort,
-            modelBytes: docUnwarpAsset.modelBytes,
-            configText: docUnwarpAsset.configText,
-            backend,
-            webgpuState
-          })
-        : Promise.resolve(null),
-      createDetModel({
-        ort: this.ort,
-        modelBytes: detAsset.modelBytes,
-        configText: detAsset.configText,
-        backend,
-        webgpuState,
-        batchSize: detBatchSize
-      }),
-      textLineOriAsset
-        ? createTextLineOrientationModel({
-            ort: this.ort,
-            modelBytes: textLineOriAsset.modelBytes,
-            configText: textLineOriAsset.configText,
-            backend,
-            webgpuState,
-            batchSize: textLineOriBatchSize
-          })
-        : Promise.resolve(null),
-      createRecModel({
-        ort: this.ort,
-        modelBytes: recAsset.modelBytes,
-        configText: recAsset.configText,
-        backend,
-        webgpuState,
-        batchSize: recBatchSize
-      })
-    ]);
+    const [docOrientationModel, docUnwarpingModel, detModel, textLineOrientationModel, recModel] =
+      await Promise.all([
+        docOriAsset
+          ? createDocOrientationModel({
+              ort: this.ort,
+              modelBytes: docOriAsset.modelBytes,
+              configText: docOriAsset.configText,
+              backend,
+              webgpuState
+            })
+          : Promise.resolve(null),
+        docUnwarpAsset
+          ? createDocUnwarpingModel({
+              ort: this.ort,
+              modelBytes: docUnwarpAsset.modelBytes,
+              configText: docUnwarpAsset.configText,
+              backend,
+              webgpuState
+            })
+          : Promise.resolve(null),
+        createDetModel({
+          ort: this.ort,
+          modelBytes: detAsset.modelBytes,
+          configText: detAsset.configText,
+          backend,
+          webgpuState,
+          batchSize: detBatchSize
+        }),
+        textLineOriAsset
+          ? createTextLineOrientationModel({
+              ort: this.ort,
+              modelBytes: textLineOriAsset.modelBytes,
+              configText: textLineOriAsset.configText,
+              backend,
+              webgpuState,
+              batchSize: textLineOriBatchSize
+            })
+          : Promise.resolve(null),
+        createRecModel({
+          ort: this.ort,
+          modelBytes: recAsset.modelBytes,
+          configText: recAsset.configText,
+          backend,
+          webgpuState,
+          batchSize: recBatchSize
+        })
+      ]);
     this.docOrientationModel = docOrientationModel;
     this.docUnwarpingModel = docUnwarpingModel;
     this.detModel = detModel;

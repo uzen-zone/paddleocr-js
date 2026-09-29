@@ -79,9 +79,7 @@ export function parseDocOrientationModelConfigText(text: string): DocOrientation
   const labels = topk.label_list;
 
   return {
-    resizeShort: Number(
-      resize?.resize_short ?? DEFAULT_DOC_ORIENTATION_MODEL_CONFIG.resizeShort
-    ),
+    resizeShort: Number(resize?.resize_short ?? DEFAULT_DOC_ORIENTATION_MODEL_CONFIG.resizeShort),
     cropSize: Number(crop?.size ?? DEFAULT_DOC_ORIENTATION_MODEL_CONFIG.cropSize),
     normalize: {
       mean:

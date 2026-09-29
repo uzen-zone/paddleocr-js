@@ -111,7 +111,7 @@ The version split is deliberate and worth stating plainly, because the two modes
 - main thread resolves `import("onnxruntime-web")`, which is left external in the library build, so the **consumer's installed version** is used
 - the package worker is built with `inlineDynamicImports: true`, so ORT's JS glue is **baked in at SDK build time**
 
-The build-time version is published as the `INLINED_ORT_VERSION` export, and the same number pins the CDN fallback URL, so the glue the worker loads and the binaries it fetches always come from one release. `wasmPaths` changes only *where* binaries are fetched from, not *which version* — pointing it at binaries from a different ORT release is exactly the mismatch `INLINED_ORT_VERSION` lets a consumer detect up front:
+The build-time version is published as the `INLINED_ORT_VERSION` export, and the same number pins the CDN fallback URL, so the glue the worker loads and the binaries it fetches always come from one release. `wasmPaths` changes only _where_ binaries are fetched from, not _which version_ — pointing it at binaries from a different ORT release is exactly the mismatch `INLINED_ORT_VERSION` lets a consumer detect up front:
 
 ```ts
 import { INLINED_ORT_VERSION } from "@uzen/paddleocr-js";

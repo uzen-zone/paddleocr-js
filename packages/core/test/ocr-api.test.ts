@@ -145,12 +145,10 @@ describe("PaddleOCR high-level API", () => {
       });
 
     try {
-      const createPromise = PaddleOCR.create({ lang: "ch", ocrVersion: "PP-OCRv5" }).then(
-        (ocr) => {
-          order.push("create:resolved");
-          return ocr;
-        }
-      );
+      const createPromise = PaddleOCR.create({ lang: "ch", ocrVersion: "PP-OCRv5" }).then((ocr) => {
+        order.push("create:resolved");
+        return ocr;
+      });
 
       // Let create() reach initialize(), then confirm it is still pending.
       await vi.waitFor(() => expect(initializeSpy).toHaveBeenCalledTimes(1));

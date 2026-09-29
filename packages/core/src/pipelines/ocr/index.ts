@@ -14,7 +14,7 @@ import type { OrtOptions } from "../../runtime/ort";
 import type { ModelAsset } from "../../resources/model-asset";
 import type { LimitType } from "./runtime-params";
 
-export interface PaddleOCRCreateOptions {
+export type PaddleOCRCreateOptions = {
   worker?: boolean | { createWorker?: () => Worker };
   fetch?: typeof fetch;
 
@@ -105,9 +105,7 @@ export interface PaddleOCRCreateOptions {
   text_det_unclip_ratio?: number;
   textRecScoreThresh?: number;
   text_rec_score_thresh?: number;
-
-  [key: string]: unknown;
-}
+};
 
 export class PaddleOCR extends OcrPipelineRunner {
   constructor(options: OcrPipelineRunnerOptions) {

@@ -253,6 +253,33 @@ Worker 模式的行为：
 - 浏览器输入会先在主线程标准化，再传入 worker 执行推理
 - `cv.Mat` 仅支持直接在主线程产线路径中使用
 
+### ONNX Runtime 版本对齐
+
+两种执行模式获取 ONNX Runtime 的方式不同，版本必须一致：
+
+- **主线程** — `onnxruntime-web` 是使用方应用的常规依赖，因此使用你安装的版本，由你的打包工具产出配套的 `.wasm` 文件
+- **Worker** — ORT 的 JS glue 在 SDK 构建时被打进包内 worker，`.wasm` 二进制则来自 `ortOptions.wasmPaths`；未设置时回退到绑定同一构建时版本的 CDN
+
+SDK 导出了 `INLINED_ORT_VERSION`，便于你直接比对而不必猜测：
+
+```js
+import { INLINED_ORT_VERSION } from "@uzen/paddleocr-js";
+
+// 未经过带构建期 define 的构建（例如直接从源码消费）时为 null
+console.log(INLINED_ORT_VERSION); // 例如 "1.24.3"
+```
+
+版本不一致的问题暴露得很晚，且报错信息里通常不会提到版本 —— 往往只是一个含糊的 WASM 实例化失败。因此使用 worker 模式时，请把 `onnxruntime-web` 固定到 `INLINED_ORT_VERSION`，并让 `ortOptions.wasmPaths` 指向从该版本拷贝出来的二进制：
+
+```js
+await PaddleOCR.create({
+  worker: true,
+  ortOptions: { wasmPaths: "/assets/" } // 来自你固定版本的 ORT WASM
+});
+```
+
+worker 模式下若未设置 `wasmPaths`，SDK 会回退到按版本绑定的 CDN，并在控制台打印一条指明所需版本的警告。
+
 ## 可视化
 
 可选的 `@uzen/paddleocr-js/viz` 子路径提供了将 OCR 结果渲染为图像的可视化工具。
@@ -300,6 +327,7 @@ viz 模块会渲染一张左右对比的合成图像：左侧为带有检测框�
 - `ocr.dispose()`
 - `parseOcrPipelineConfigText(text)`
 - `normalizeOcrPipelineConfig(config)`
+- `INLINED_ORT_VERSION`（`string | null` —— 见 [ONNX Runtime 版本对齐](#onnx-runtime-版本对齐)）
 - `OcrVisualizer`（来自 `@uzen/paddleocr-js/viz`）
 - `renderOcrToBlob`（来自 `@uzen/paddleocr-js/viz`）
 - `deterministicColor`（来自 `@uzen/paddleocr-js/viz`）

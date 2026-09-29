@@ -106,6 +106,21 @@ When `wasmPaths` is set, both modes fetch WASM from the specified path. When it 
 
 Setting `ortOptions.wasmPaths` explicitly is recommended for worker mode to ensure version consistency between the two modes.
 
+The version split is deliberate and worth stating plainly, because the two modes do not obtain ORT the same way:
+
+- main thread resolves `import("onnxruntime-web")`, which is left external in the library build, so the **consumer's installed version** is used
+- the package worker is built with `inlineDynamicImports: true`, so ORT's JS glue is **baked in at SDK build time**
+
+The build-time version is published as the `INLINED_ORT_VERSION` export, and the same number pins the CDN fallback URL, so the glue the worker loads and the binaries it fetches always come from one release. `wasmPaths` changes only *where* binaries are fetched from, not *which version* — pointing it at binaries from a different ORT release is exactly the mismatch `INLINED_ORT_VERSION` lets a consumer detect up front:
+
+```ts
+import { INLINED_ORT_VERSION } from "@uzen/paddleocr-js";
+
+if (INLINED_ORT_VERSION && INLINED_ORT_VERSION !== myInstalledOrtVersion) {
+  console.warn(`onnxruntime-web ${myInstalledOrtVersion} != ${INLINED_ORT_VERSION}`);
+}
+```
+
 ## Application responsibilities
 
 The SDK owns OCR runtime setup and inference orchestration. The host application still owns:

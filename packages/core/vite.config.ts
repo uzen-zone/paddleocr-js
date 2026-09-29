@@ -68,7 +68,13 @@ export default defineConfig({
   define: {
     __ORT_WASM_CDN_PREFIX__: JSON.stringify(
       `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ortVersion}/dist/`
-    )
+    ),
+    // Exposed to consumers as `INLINED_ORT_VERSION`. The package worker is built
+    // with `inlineDynamicImports: true`, so ORT's JS glue is baked into the
+    // worker at this version while the main thread resolves `onnxruntime-web`
+    // from the consumer's node_modules. Publishing the number lets a consumer
+    // detect a mismatch instead of guessing.
+    __INLINED_ORT_VERSION__: JSON.stringify(ortVersion)
   },
   worker: {
     format: "es",

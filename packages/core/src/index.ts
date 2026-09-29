@@ -74,6 +74,7 @@ export type {
 export type { ModelAsset, ModelAssetsMap } from "./resources/model-asset";
 
 export type { WebGpuState, OrtOptions } from "./runtime/ort";
+export { INLINED_ORT_VERSION } from "./runtime/ort-version";
 
 export type { ImageSource, SourceMatResult } from "./platform/browser";
 

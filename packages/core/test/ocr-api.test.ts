@@ -125,6 +125,67 @@ describe("PaddleOCR high-level API", () => {
     expectDefaultModelAssets(ocr);
   });
 
+  it("initializes eagerly by default, awaiting models before create() resolves", async () => {
+    // The default is a long-running create(): it downloads and opens the ONNX
+    // models. Consumers need to know that up front, so the default is pinned by
+    // a test rather than left to the implementation.
+    const order: string[] = [];
+    let releaseInit: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      releaseInit = resolve;
+    });
+    const initializeSpy = vi
+      .spyOn(PaddleOCR.prototype, "initialize")
+      .mockImplementation(async () => {
+        order.push("initialize:start");
+        await gate;
+        order.push("initialize:end");
+        return { models: [] } as never;
+      });
+
+    try {
+      const createPromise = PaddleOCR.create({ lang: "ch", ocrVersion: "PP-OCRv5" }).then(
+        (ocr) => {
+          order.push("create:resolved");
+          return ocr;
+        }
+      );
+
+      // Let create() reach initialize(), then confirm it is still pending.
+      await vi.waitFor(() => expect(initializeSpy).toHaveBeenCalledTimes(1));
+      expect(order).toEqual(["initialize:start"]);
+
+      releaseInit();
+      const ocr = await createPromise;
+
+      // create() awaited initialize rather than merely calling it.
+      expect(order).toEqual(["initialize:start", "initialize:end", "create:resolved"]);
+      expect(ocr).toBeInstanceOf(PaddleOCR);
+    } finally {
+      initializeSpy.mockRestore();
+    }
+  });
+
+  it("defers initialization when initialize: false is passed", async () => {
+    const initializeSpy = vi
+      .spyOn(PaddleOCR.prototype, "initialize")
+      .mockResolvedValue({ models: [] } as never);
+
+    try {
+      const ocr = await PaddleOCR.create({
+        lang: "ch",
+        ocrVersion: "PP-OCRv5",
+        ...CREATE_WITHOUT_INIT
+      });
+
+      expect(initializeSpy).not.toHaveBeenCalled();
+      // Nothing was initialized, so there is no summary yet.
+      expect(ocr.getInitializationSummary()).toBeNull();
+    } finally {
+      initializeSpy.mockRestore();
+    }
+  });
+
   it("keeps the same create API when worker mode is enabled", async () => {
     const defaultOrt = normalizeOrtOptions();
     const ocr = await PaddleOCR.create({

@@ -29,6 +29,21 @@ console.log(result.items);
 
 `predict` resolves to an **array** of `OcrResult` (one per input image). A single `Blob` / `File` still produces a one-element array—use destructuring or `results[0]`.
 
+### Initialization is eager
+
+`create()` awaits `initialize()` before resolving, so the first call downloads and opens the ONNX models. For the default language that is roughly 21 MB and takes tens of seconds on a cold cache. Treat a slow first `create()` as expected, not as a hang.
+
+Pass `initialize: false` to get the instance back immediately and start the work yourself — useful for deferring model loading until the user has supplied an image, or for driving a loading indicator:
+
+```js
+const ocr = await PaddleOCR.create({ lang: "ch", initialize: false });
+const ready = ocr.initialize(); // kicks off the download
+await whenTheUserPicksAnImage();
+await ready;
+```
+
+`initialize()` is idempotent and safe to await more than once, so no initialization state needs tracking on the caller side.
+
 ## Construction Options
 
 There are two main construction styles:
@@ -334,26 +349,27 @@ The viz module renders a side-by-side composite image: the original image with d
 
 ### Construction options summary
 
-| Option                         | Type                                         | Description                                                       |
-| ------------------------------ | -------------------------------------------- | ----------------------------------------------------------------- |
-| `lang`                         | `string`                                     | Language code, e.g. `"ch"`, `"en"`, `"japan"`                     |
-| `ocrVersion`                   | `string`                                     | `"PP-OCRv5"` (default) or `"PP-OCRv6"`                            |
-| `worker`                       | `boolean \| { createWorker?: () => Worker }` | Run in Web Worker                                                 |
-| `pipelineConfig`               | `string \| object`                           | YAML or parsed config object                                      |
-| `ortOptions`                   | `object`                                     | ONNX Runtime options (`backend`, `wasmPaths`, `numThreads`, etc.) |
-| `textDetectionModelName`       | `string`                                     | Override detection model                                          |
-| `textRecognitionModelName`     | `string`                                     | Override recognition model                                        |
-| `docOrientationModelName`      | `string`                                     | Enable document orientation classification                        |
-| `docUnwarpingModelName`        | `string`                                     | Enable document unwarping                                         |
-| `textLineOrientationModelName` | `string`                                     | Enable text line orientation classification                       |
-| `textDetectionBatchSize`       | `number`                                     | Detection batch size                                              |
-| `textRecognitionBatchSize`     | `number`                                     | Recognition batch size                                            |
-| `textLineOrientationBatchSize` | `number`                                     | Text line orientation batch size                                  |
-| `textDetLimitSideLen`          | `number`                                     | Detection input side length limit                                 |
-| `textDetThresh`                | `number`                                     | Detection score threshold                                         |
-| `textDetBoxThresh`             | `number`                                     | Detection box threshold                                           |
-| `textDetUnclipRatio`           | `number`                                     | Detection unclip ratio                                            |
-| `textRecScoreThresh`           | `number`                                     | Recognition score threshold                                       |
+| Option                         | Type                                         | Description                                                                                     |
+| ------------------------------ | -------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `lang`                         | `string`                                     | Language code, e.g. `"ch"`, `"en"`, `"japan"`                                                   |
+| `ocrVersion`                   | `string`                                     | `"PP-OCRv5"` (default) or `"PP-OCRv6"`                                                          |
+| `worker`                       | `boolean \| { createWorker?: () => Worker }` | Run in Web Worker                                                                               |
+| `initialize`                   | `boolean`                                    | Await `initialize()` inside `create()`. Defaults to `true`; pass `false` to defer model loading |
+| `pipelineConfig`               | `string \| object`                           | YAML or parsed config object                                                                    |
+| `ortOptions`                   | `object`                                     | ONNX Runtime options (`backend`, `wasmPaths`, `numThreads`, etc.)                               |
+| `textDetectionModelName`       | `string`                                     | Override detection model                                                                        |
+| `textRecognitionModelName`     | `string`                                     | Override recognition model                                                                      |
+| `docOrientationModelName`      | `string`                                     | Enable document orientation classification                                                      |
+| `docUnwarpingModelName`        | `string`                                     | Enable document unwarping                                                                       |
+| `textLineOrientationModelName` | `string`                                     | Enable text line orientation classification                                                     |
+| `textDetectionBatchSize`       | `number`                                     | Detection batch size                                                                            |
+| `textRecognitionBatchSize`     | `number`                                     | Recognition batch size                                                                          |
+| `textLineOrientationBatchSize` | `number`                                     | Text line orientation batch size                                                                |
+| `textDetLimitSideLen`          | `number`                                     | Detection input side length limit                                                               |
+| `textDetThresh`                | `number`                                     | Detection score threshold                                                                       |
+| `textDetBoxThresh`             | `number`                                     | Detection box threshold                                                                         |
+| `textDetUnclipRatio`           | `number`                                     | Detection unclip ratio                                                                          |
+| `textRecScoreThresh`           | `number`                                     | Recognition score threshold                                                                     |
 
 ## Package Layout
 

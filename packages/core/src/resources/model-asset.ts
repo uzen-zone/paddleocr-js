@@ -147,7 +147,7 @@ export async function loadModelAsset(
     throw new Error(`Failed to download ${asset.url}: HTTP ${String(response.status)}`);
   }
   const buffer = await response.arrayBuffer();
-  const entries = extractTarEntries(buffer);
+  const entries = await extractTarEntries(buffer);
   const modelBytes = pickTarEntry(entries, MODEL_ENTRY_PATHS.model);
   const configBytes = pickTarEntry(entries, MODEL_ENTRY_PATHS.config);
 

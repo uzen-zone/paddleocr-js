@@ -17,7 +17,31 @@ import type { LimitType } from "./runtime-params";
 export interface PaddleOCRCreateOptions {
   worker?: boolean | { createWorker?: () => Worker };
   fetch?: typeof fetch;
+
+  /**
+   * Whether `create()` awaits `initialize()` before resolving.
+   *
+   * Defaults to eager initialization. That means the first `await
+   * PaddleOCR.create(...)` downloads and opens the ONNX models, which for the
+   * default language is roughly 21 MB and takes tens of seconds on a cold
+   * cache. Expect a long-running `create()` on first load, not a hang.
+   *
+   * Pass `initialize: false` to get an instance back immediately and start the
+   * work yourself -- useful for deferring model loading until the user has
+   * supplied an image, or for driving a loading indicator:
+   *
+   * ```ts
+   * const ocr = await PaddleOCR.create({ initialize: false });
+   * const ready = ocr.initialize();          // kicks off the download
+   * await whenTheUserPicksAnImage();
+   * await ready;
+   * ```
+   *
+   * Either way `initialize()` is idempotent and safe to await more than once,
+   * so no initialization state needs tracking on the caller side.
+   */
   initialize?: boolean;
+
   ortOptions?: OrtOptions;
 
   pipelineConfig?: unknown;

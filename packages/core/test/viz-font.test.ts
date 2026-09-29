@@ -10,7 +10,10 @@ describe("viz/font", () => {
       load: vi.fn().mockResolvedValue(undefined),
       family: ""
     };
-    (globalThis as Record<string, unknown>).FontFace = vi.fn(function (this: unknown, family: string) {
+    (globalThis as Record<string, unknown>).FontFace = vi.fn(function (
+      this: unknown,
+      family: string
+    ) {
       mockFontFace.family = family;
       return mockFontFace;
     });

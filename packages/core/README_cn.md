@@ -29,6 +29,21 @@ console.log(result.items);
 
 `predict` 返回 **`OcrResult` 组成的数组**（每张输入图像对应一项）。传入单个 `Blob` / `File` 时也会得到长度为 1 的数组，请使用解构或 `results[0]` 取值。
 
+### 初始化是即时的
+
+`create()` 会先 `await initialize()` 再返回，因此首次调用会下载并打开 ONNX 模型。默认语言下大约 21 MB，冷缓存时可能需要几十秒。首次 `create()` 较慢属于正常现象，不是卡死。
+
+传入 `initialize: false` 可以立即拿到实例，由你自己启动初始化 —— 适合推迟到用户选好图片后再加载模型，或用于驱动加载指示器：
+
+```js
+const ocr = await PaddleOCR.create({ lang: "ch", initialize: false });
+const ready = ocr.initialize(); // 开始下载
+await whenTheUserPicksAnImage();
+await ready;
+```
+
+`initialize()` 是幂等的，可以多次 `await`，使用方无需自行维护初始化状态。
+
 ## 构造方式
 
 主要有两种构造方式：
@@ -83,10 +98,10 @@ await PaddleOCR.create({
 
 三个可选的预处理阶段可提升识别质量：
 
-| 阶段 | 模型名 | 说明 |
-|------|--------|------|
-| 文档方向分类 | `PP-LCNet_x1_0_doc_ori` | 判断文档角度（0°/90°/180°/270°）并自动旋转 |
-| 文档去歪曲 | `UVDoc` | 校正透视畸变和页面弯曲 |
+| 阶段           | 模型名                       | 说明                                          |
+| -------------- | ---------------------------- | --------------------------------------------- |
+| 文档方向分类   | `PP-LCNet_x1_0_doc_ori`      | 判断文档角度（0°/90°/180°/270°）并自动旋转    |
+| 文档去歪曲     | `UVDoc`                      | 校正透视畸变和页面弯曲                        |
 | 文本行方向分类 | `PP-LCNet_x1_0_textline_ori` | 判断每行文本方向（0°/180°），识别前翻转倒置行 |
 
 通过传入对应的模型名启用：
@@ -253,6 +268,33 @@ Worker 模式的行为：
 - 浏览器输入会先在主线程标准化，再传入 worker 执行推理
 - `cv.Mat` 仅支持直接在主线程产线路径中使用
 
+### ONNX Runtime 版本对齐
+
+两种执行模式获取 ONNX Runtime 的方式不同，版本必须一致：
+
+- **主线程** — `onnxruntime-web` 是使用方应用的常规依赖，因此使用你安装的版本，由你的打包工具产出配套的 `.wasm` 文件
+- **Worker** — ORT 的 JS glue 在 SDK 构建时被打进包内 worker，`.wasm` 二进制则来自 `ortOptions.wasmPaths`；未设置时回退到绑定同一构建时版本的 CDN
+
+SDK 导出了 `INLINED_ORT_VERSION`，便于你直接比对而不必猜测：
+
+```js
+import { INLINED_ORT_VERSION } from "@uzen/paddleocr-js";
+
+// 未经过带构建期 define 的构建（例如直接从源码消费）时为 null
+console.log(INLINED_ORT_VERSION); // 例如 "1.24.3"
+```
+
+版本不一致的问题暴露得很晚，且报错信息里通常不会提到版本 —— 往往只是一个含糊的 WASM 实例化失败。因此使用 worker 模式时，请把 `onnxruntime-web` 固定到 `INLINED_ORT_VERSION`，并让 `ortOptions.wasmPaths` 指向从该版本拷贝出来的二进制：
+
+```js
+await PaddleOCR.create({
+  worker: true,
+  ortOptions: { wasmPaths: "/assets/" } // 来自你固定版本的 ORT WASM
+});
+```
+
+worker 模式下若未设置 `wasmPaths`，SDK 会回退到按版本绑定的 CDN，并在控制台打印一条指明所需版本的警告。
+
 ## 可视化
 
 可选的 `@uzen/paddleocr-js/viz` 子路径提供了将 OCR 结果渲染为图像的可视化工具。
@@ -300,32 +342,34 @@ viz 模块会渲染一张左右对比的合成图像：左侧为带有检测框�
 - `ocr.dispose()`
 - `parseOcrPipelineConfigText(text)`
 - `normalizeOcrPipelineConfig(config)`
+- `INLINED_ORT_VERSION`（`string | null` —— 见 [ONNX Runtime 版本对齐](#onnx-runtime-版本对齐)）
 - `OcrVisualizer`（来自 `@uzen/paddleocr-js/viz`）
 - `renderOcrToBlob`（来自 `@uzen/paddleocr-js/viz`）
 - `deterministicColor`（来自 `@uzen/paddleocr-js/viz`）
 
 ### 构造参数一览
 
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| `lang` | `string` | 语言代码，如 `"ch"`、`"en"`、`"japan"` |
-| `ocrVersion` | `string` | `"PP-OCRv5"`（默认）或 `"PP-OCRv6"` |
-| `worker` | `boolean \| { createWorker?: () => Worker }` | 在 Web Worker 中运行 |
-| `pipelineConfig` | `string \| object` | YAML 或解析后的配置对象 |
-| `ortOptions` | `object` | ONNX Runtime 选项（`backend`、`wasmPaths`、`numThreads` 等） |
-| `textDetectionModelName` | `string` | 覆盖检测模型 |
-| `textRecognitionModelName` | `string` | 覆盖识别模型 |
-| `docOrientationModelName` | `string` | 启用文档方向分类 |
-| `docUnwarpingModelName` | `string` | 启用文档去歪曲 |
-| `textLineOrientationModelName` | `string` | 启用文本行方向分类 |
-| `textDetectionBatchSize` | `number` | 检测批处理大小 |
-| `textRecognitionBatchSize` | `number` | 识别批处理大小 |
-| `textLineOrientationBatchSize` | `number` | 文本行方向分类批处理大小 |
-| `textDetLimitSideLen` | `number` | 检测输入边长限制 |
-| `textDetThresh` | `number` | 检测置信度阈值 |
-| `textDetBoxThresh` | `number` | 检测框阈值 |
-| `textDetUnclipRatio` | `number` | 检测 unclip 比率 |
-| `textRecScoreThresh` | `number` | 识别置信度阈值 |
+| 参数                           | 类型                                         | 说明                                                                             |
+| ------------------------------ | -------------------------------------------- | -------------------------------------------------------------------------------- |
+| `lang`                         | `string`                                     | 语言代码，如 `"ch"`、`"en"`、`"japan"`                                           |
+| `ocrVersion`                   | `string`                                     | `"PP-OCRv5"`（默认）或 `"PP-OCRv6"`                                              |
+| `worker`                       | `boolean \| { createWorker?: () => Worker }` | 在 Web Worker 中运行                                                             |
+| `initialize`                   | `boolean`                                    | `create()` 内部是否 `await initialize()`。默认 `true`；传 `false` 可推迟模型加载 |
+| `pipelineConfig`               | `string \| object`                           | YAML 或解析后的配置对象                                                          |
+| `ortOptions`                   | `object`                                     | ONNX Runtime 选项（`backend`、`wasmPaths`、`numThreads` 等）                     |
+| `textDetectionModelName`       | `string`                                     | 覆盖检测模型                                                                     |
+| `textRecognitionModelName`     | `string`                                     | 覆盖识别模型                                                                     |
+| `docOrientationModelName`      | `string`                                     | 启用文档方向分类                                                                 |
+| `docUnwarpingModelName`        | `string`                                     | 启用文档去歪曲                                                                   |
+| `textLineOrientationModelName` | `string`                                     | 启用文本行方向分类                                                               |
+| `textDetectionBatchSize`       | `number`                                     | 检测批处理大小                                                                   |
+| `textRecognitionBatchSize`     | `number`                                     | 识别批处理大小                                                                   |
+| `textLineOrientationBatchSize` | `number`                                     | 文本行方向分类批处理大小                                                         |
+| `textDetLimitSideLen`          | `number`                                     | 检测输入边长限制                                                                 |
+| `textDetThresh`                | `number`                                     | 检测置信度阈值                                                                   |
+| `textDetBoxThresh`             | `number`                                     | 检测框阈值                                                                       |
+| `textDetUnclipRatio`           | `number`                                     | 检测 unclip 比率                                                                 |
+| `textRecScoreThresh`           | `number`                                     | 识别置信度阈值                                                                   |
 
 ## 包结构
 

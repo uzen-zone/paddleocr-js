@@ -7,6 +7,7 @@ vi.mock("@techstark/opencv-js", () => ({
 }));
 
 import { PaddleOCR, normalizeOcrPipelineConfig, parseOcrPipelineConfigText } from "../src/index";
+import type { PaddleOCRCreateOptions } from "../src/pipelines/ocr/index";
 import { extractInferenceModelName } from "../src/models/common";
 import { DEFAULT_OCR_PIPELINE_CONFIG_TEXT } from "../src/pipelines/ocr/default-config";
 import { normalizeOrtOptions } from "../src/pipelines/ocr/shared";
@@ -125,6 +126,47 @@ describe("PaddleOCR high-level API", () => {
     expectDefaultModelAssets(ocr);
   });
 
+  it("initializes eagerly by default, awaiting models before create() resolves", async () => {
+    // The default is a long-running create(): it downloads and opens the ONNX
+    // models. Consumers need to know that up front, so the default is pinned by
+    // a test rather than left to the implementation.
+    const order: string[] = [];
+    let releaseInit: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      releaseInit = resolve;
+    });
+    const initializeSpy = vi
+      .spyOn(PaddleOCR.prototype, "initialize")
+      .mockImplementation(async () => {
+        order.push("initialize:start");
+        await gate;
+        order.push("initialize:end");
+        return { models: [] } as never;
+      });
+
+    try {
+      const createPromise = PaddleOCR.create({ lang: "ch", ocrVersion: "PP-OCRv5" }).then(
+        (ocr) => {
+          order.push("create:resolved");
+          return ocr;
+        }
+      );
+
+      // Let create() reach initialize(), then confirm it is still pending.
+      await vi.waitFor(() => expect(initializeSpy).toHaveBeenCalledTimes(1));
+      expect(order).toEqual(["initialize:start"]);
+
+      releaseInit();
+      const ocr = await createPromise;
+
+      // create() awaited initialize rather than merely calling it.
+      expect(order).toEqual(["initialize:start", "initialize:end", "create:resolved"]);
+      expect(ocr).toBeInstanceOf(PaddleOCR);
+    } finally {
+      initializeSpy.mockRestore();
+    }
+  });
+
   it("accepts snake_case model asset aliases for every model role", async () => {
     // The asset alias matrix was asymmetric: *ModelAsset existed only in
     // camelCase, while *ModelDir existed in both camelCase and snake_case.
@@ -155,17 +197,38 @@ describe("PaddleOCR high-level API", () => {
     ];
 
     for (const testCase of cases) {
+      // The index signature is gone, so computed keys need an explicit cast.
       const ocr = await PaddleOCR.create({
         lang: "ch",
         ocrVersion: "PP-OCRv5",
         [testCase.nameKey]: "custom_model",
         [testCase.assetKey]: { url: "https://example.com/custom.tar" },
         ...IGNORE_UNSUPPORTED
-      });
+      } as PaddleOCRCreateOptions);
 
       expect(ocr.options.pipelineConfig.assets[testCase.role]?.url).toBe(
         "https://example.com/custom.tar"
       );
+    }
+  });
+
+  it("defers initialization when initialize: false is passed", async () => {
+    const initializeSpy = vi
+      .spyOn(PaddleOCR.prototype, "initialize")
+      .mockResolvedValue({ models: [] } as never);
+
+    try {
+      const ocr = await PaddleOCR.create({
+        lang: "ch",
+        ocrVersion: "PP-OCRv5",
+        ...CREATE_WITHOUT_INIT
+      });
+
+      expect(initializeSpy).not.toHaveBeenCalled();
+      // Nothing was initialized, so there is no summary yet.
+      expect(ocr.getInitializationSummary()).toBeNull();
+    } finally {
+      initializeSpy.mockRestore();
     }
   });
 
@@ -268,8 +331,12 @@ describe("PaddleOCR high-level API", () => {
       ...CREATE_WITHOUT_INIT
     });
 
-    expect(ocr.options.pipelineConfig.assets.det?.url).toMatch(/PP-OCRv6_tiny_det_onnx_infer\.tar$/);
-    expect(ocr.options.pipelineConfig.assets.rec?.url).toMatch(/PP-OCRv6_tiny_rec_onnx_infer\.tar$/);
+    expect(ocr.options.pipelineConfig.assets.det?.url).toMatch(
+      /PP-OCRv6_tiny_det_onnx_infer\.tar$/
+    );
+    expect(ocr.options.pipelineConfig.assets.rec?.url).toMatch(
+      /PP-OCRv6_tiny_rec_onnx_infer\.tar$/
+    );
   });
 
   it("allows overriding model selection via model_name options", async () => {

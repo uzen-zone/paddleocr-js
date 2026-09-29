@@ -194,7 +194,8 @@ const OCR_MODEL_ROLES: Readonly<ModelRole[]> = Object.freeze([
     ],
     nameLabel: "text line orientation model name",
     assetLabel: "text line orientation model asset",
-    assetRequirementError: "textline_orientation_model_dir requires textline_orientation_model_name."
+    assetRequirementError:
+      "textline_orientation_model_dir requires textline_orientation_model_name."
   },
   {
     assetKey: "rec",

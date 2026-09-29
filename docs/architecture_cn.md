@@ -103,6 +103,21 @@ PaddleOCR.create({
 
 因此，在 Worker 模式下建议显式设置 `ortOptions.wasmPaths`，以保证两种模式使用同一套 WASM 版本。
 
+这里有个刻意为之但值得说明的版本差异 —— 两种模式获取 ORT 的方式本就不同：
+
+- 主线程通过 `import("onnxruntime-web")` 加载，该依赖在库构建时被标记为 external，因此使用**使用方安装的版本**
+- 包内 worker 以 `inlineDynamicImports: true` 构建，ORT 的 JS glue **在 SDK 构建时就被打包进去**
+
+构建时的版本号以 `INLINED_ORT_VERSION` 导出，同时它也是 CDN 回退地址的版本锚点，因此 worker 加载的 glue 与它拉取的二进制始终来自同一个发布版本。`wasmPaths` 只改变二进制的**获取位置**，不改变**版本** —— 把它指向另一个 ORT 版本的二进制，正是 `INLINED_ORT_VERSION` 能让使用方提前发现的不匹配：
+
+```ts
+import { INLINED_ORT_VERSION } from "@uzen/paddleocr-js";
+
+if (INLINED_ORT_VERSION && INLINED_ORT_VERSION !== myInstalledOrtVersion) {
+  console.warn(`onnxruntime-web ${myInstalledOrtVersion} != ${INLINED_ORT_VERSION}`);
+}
+```
+
 ## 应用侧职责
 
 SDK 负责 OCR 运行时初始化与推理编排；宿主应用仍需负责：

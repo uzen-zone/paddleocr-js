@@ -9,7 +9,24 @@ import type { OpenCv, Mat } from "@techstark/opencv-js";
 
 import { clamp, distance2 } from "../utils/common";
 
-export type Point2D = [number, number];
+/**
+ * A point in image space, ordered `[x, y]`.
+ *
+ * The element labels are purely for tooling: they show up in editor hovers as
+ * `[x, y]` rather than an anonymous pair, and they name the two positions when
+ * a tuple shows up in a signature. They cost nothing at runtime and do not
+ * narrow the type.
+ *
+ * `readonly` is deliberately omitted. `clipper-lib`'s `ClipperPoint` is
+ * declared as a mutable tuple, so a readonly `Point2D` is not assignable to it
+ * and `unclip()` / `getMiniBoxFromPoints()` stop compiling without a cast at
+ * every call site.
+ *
+ * Note the order is `[x, y]`, matching image coordinates. Reading `.x`/`.y`
+ * off a tuple yields `undefined` at runtime, so destructure instead:
+ * `poly.map(([x, y]) => ...)`.
+ */
+export type Point2D = [x: number, y: number];
 
 export interface NormalizeConfig {
   mean: number[];

@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+### 变更
+
+- **默认引擎从 PP-OCRv5 切换为 PP-OCRv6**（行为变更，非 API 破坏）：
+  - 未传 `ocrVersion` 时（无论是否传了 `lang`）解析到内置 **PP-OCRv6_small** 检测/识别模型对（约 30 MB），此前为 PP-OCRv5_mobile（约 21 MB）
+  - 包级默认 `create()`（不传任何选项）同样使用 PP-OCRv6_small
+  - 显式 `ocrVersion: "PP-OCRv5"` 仍解析到轻量的 PP-OCRv5_mobile 模型对
+  - **迁移**：无需改动代码；若在意冷启动下载体积，显式传 `ocrVersion: "PP-OCRv5"` 即可恢复旧默认
+- 文档示例统一改用 PP-OCRv6；core README 新增「类型与集成陷阱」小节，并把 Quick Start 中遗留的 `const [result] = await ocr.predict(...)` 修正为 1.0.0 的单结果形态
+
 ## [1.0.0] - 2026-09-29
 
 本版本包含两项 **breaking change**，升级前请阅读对应小节。

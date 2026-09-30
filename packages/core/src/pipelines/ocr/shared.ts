@@ -62,8 +62,14 @@ const DEFAULT_NORMALIZED_PIPELINE_CONFIG = normalizeOcrPipelineConfig(
 const DEFAULT_MODEL_SELECTION: Readonly<PipelineModelSelection> = Object.freeze({
   ...DEFAULT_NORMALIZED_PIPELINE_CONFIG.modelSelection
 });
-const DEFAULT_LANG_VERSION_MODEL_SELECTION: Readonly<PipelineModelSelection> = Object.freeze({
-  ...DEFAULT_MODEL_SELECTION
+// The v5 lang table is deliberately pinned to the lighter PP-OCRv5_mobile pair:
+// a lang given without ocrVersion resolves to PP-OCRv6 (the default), and an
+// explicit `ocrVersion: "PP-OCRv5"` must keep its documented model set even
+// though the package-wide default is now PP-OCRv6.
+const PP_OCRV5_LANG_VERSION_MODEL_SELECTION: Readonly<PipelineModelSelection> = Object.freeze({
+  ...DEFAULT_MODEL_SELECTION,
+  textDetectionModelName: "PP-OCRv5_mobile_det",
+  textRecognitionModelName: "PP-OCRv5_mobile_rec"
 });
 const PP_OCRV6_LANG_VERSION_MODEL_SELECTION: Readonly<PipelineModelSelection> = Object.freeze({
   docOrientationModelName: DEFAULT_MODEL_SELECTION.docOrientationModelName,
@@ -215,10 +221,10 @@ const OCR_MODEL_ROLES: Readonly<ModelRole[]> = Object.freeze([
 ]);
 
 const SUPPORTED_LANG_VERSION_MODELS = new Map<string, Readonly<PipelineModelSelection>>([
-  ["ch::PP-OCRv5", DEFAULT_LANG_VERSION_MODEL_SELECTION],
-  ["chinese_cht::PP-OCRv5", DEFAULT_LANG_VERSION_MODEL_SELECTION],
-  ["en::PP-OCRv5", DEFAULT_LANG_VERSION_MODEL_SELECTION],
-  ["japan::PP-OCRv5", DEFAULT_LANG_VERSION_MODEL_SELECTION]
+  ["ch::PP-OCRv5", PP_OCRV5_LANG_VERSION_MODEL_SELECTION],
+  ["chinese_cht::PP-OCRv5", PP_OCRV5_LANG_VERSION_MODEL_SELECTION],
+  ["en::PP-OCRv5", PP_OCRV5_LANG_VERSION_MODEL_SELECTION],
+  ["japan::PP-OCRv5", PP_OCRV5_LANG_VERSION_MODEL_SELECTION]
 ]);
 
 function readAliasedOption(
@@ -593,7 +599,9 @@ function resolveBaseModelSelection(
   }
 
   const lang = (options.lang as string) || "ch";
-  const resolvedOcrVersion = ocrVersion || "PP-OCRv5";
+  // PP-OCRv6 is the package default; pass "PP-OCRv5" explicitly to opt into the
+  // lighter v5_mobile det/rec pair.
+  const resolvedOcrVersion = ocrVersion || "PP-OCRv6";
 
   if (resolvedOcrVersion === "PP-OCRv6") {
     if (!isPpOcrV6Lang(lang)) {

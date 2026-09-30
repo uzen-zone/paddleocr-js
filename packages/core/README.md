@@ -17,13 +17,13 @@ import { PaddleOCR } from "@uzen/paddleocr-js";
 
 const ocr = await PaddleOCR.create({
   lang: "ch",
-  ocrVersion: "PP-OCRv5",
+  ocrVersion: "PP-OCRv6", // default; PP-OCRv5 is an explicit opt-out
   ortOptions: {
     backend: "auto"
   }
 });
 
-const [result] = await ocr.predict(fileOrBlob);
+const result = await ocr.predict(fileOrBlob);
 console.log(result.items);
 ```
 
@@ -31,7 +31,7 @@ console.log(result.items);
 
 ### Initialization is eager
 
-`create()` awaits `initialize()` before resolving, so the first call downloads and opens the ONNX models. For the default language that is roughly 21 MB and takes tens of seconds on a cold cache. Treat a slow first `create()` as expected, not as a hang.
+`create()` awaits `initialize()` before resolving, so the first call downloads and opens the ONNX models. The default PP-OCRv6 pair is roughly **30 MB** and takes tens of seconds on a cold cache; the lighter PP-OCRv5 pair is ~21 MB. Treat a slow first `create()` as expected, not as a hang.
 
 Pass `initialize: false` to get the instance back immediately and start the work yourself — useful for deferring model loading until the user has supplied an image, or for driving a loading indicator:
 
@@ -57,11 +57,17 @@ With direct parameters, you can specify models and configure inference batch siz
 ```js
 await PaddleOCR.create({
   lang: "ch",
-  ocrVersion: "PP-OCRv5"
+  ocrVersion: "PP-OCRv6" // default; maps to the built-in PP-OCRv6_small det/rec pair
 });
 ```
 
-`ocrVersion: "PP-OCRv6"` maps supported `lang` values to the built-in **PP-OCRv6_small** det/rec pair. For **PP-OCRv6_tiny**, pass explicit model names:
+**PP-OCRv6 is the default engine.** Pass `ocrVersion: "PP-OCRv5"` to opt into the lighter **PP-OCRv5_mobile** pair, or pass `lang` alone and let the default version apply:
+
+```js
+await PaddleOCR.create({ lang: "ch" }); // defaults to PP-OCRv6
+```
+
+For **PP-OCRv6_tiny**, pass explicit model names:
 
 ```js
 await PaddleOCR.create({
@@ -142,7 +148,7 @@ Failures surface as **`Error`** during initialization (HTTP errors, missing tar 
 ```js
 await PaddleOCR.create({
   lang: "ch",
-  ocrVersion: "PP-OCRv5",
+  ocrVersion: "PP-OCRv6",
   textDetectionBatchSize: 2,
   textRecognitionBatchSize: 8,
   ortOptions: {
@@ -176,13 +182,13 @@ SubPipelines:
 
 SubModules:
   TextDetection:
-    model_name: PP-OCRv5_mobile_det
+    model_name: PP-OCRv6_small_det
     batch_size: 2
   TextLineOrientation:
     model_name: PP-LCNet_x1_0_textline_ori
     batch_size: 6
   TextRecognition:
-    model_name: PP-OCRv5_mobile_rec
+    model_name: PP-OCRv6_small_rec
     batch_size: 6
 `;
 
@@ -250,7 +256,7 @@ import { PaddleOCR } from "@uzen/paddleocr-js";
 
 const ocr = await PaddleOCR.create({
   lang: "ch",
-  ocrVersion: "PP-OCRv5",
+  ocrVersion: "PP-OCRv6",
   worker: true,
   ortOptions: {
     backend: "wasm",
@@ -294,6 +300,16 @@ await PaddleOCR.create({
 ```
 
 If `wasmPaths` is unset in worker mode the SDK falls back to a version-pinned CDN and logs a warning naming the required version.
+
+## Types & integration gotchas
+
+These are the traps that cost the most debugging time. All of them are type-safe on the SDK side, so a wrong assumption compiles cleanly and only fails at runtime.
+
+- **`item.poly` is an array of `[x, y]` tuples**, not `{ x, y }` objects. `Point2D` is exported as `[x: number, y: number]`; destructure with `poly.map(([x, y]) => ...)`. Reading `p.x` returns `undefined` and renders as `NaN` in SVG/Canvas.
+- **`lang` and `ocrVersion` are validated as a pair.** PP-OCRv5 accepts exactly `ch`, `chinese_cht`, `en`, `japan`; PP-OCRv6 accepts those plus ~45 Latin languages but **not** `pi`. An invalid pair throws `Unsupported lang/ocrVersion combination` from `create()`. Because PP-OCRv6 is the default, `create({ lang: "pi" })` is the main way to hit the v5-only check.
+- **`ortOptions.wasmPaths` must end in a slash** — it is a directory URL that ONNX Runtime appends filenames to (`/assets/`, not `/assets`). It feeds both the main thread and the worker.
+- **Worker mode pins ONNX Runtime versions.** See [ONNX Runtime version alignment](#onnx-runtime-version-alignment): compare `INLINED_ORT_VERSION` with your installed `onnxruntime-web` and point `wasmPaths` at binaries from that version.
+- **Exported types you can import**: `PaddleOCRCreateOptions`, `OcrResult`, `OcrResultItem`, `OcrPredictInput`, `Point2D`, `INLINED_ORT_VERSION`. `predict` mirrors your input shape — a single image resolves to a single `OcrResult`, an array to `OcrResult[]` in the same order.
 
 ## Visualization
 
@@ -352,7 +368,7 @@ The viz module renders a side-by-side composite image: the original image with d
 | Option                         | Type                                         | Description                                                                                     |
 | ------------------------------ | -------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | `lang`                         | `string`                                     | Language code, e.g. `"ch"`, `"en"`, `"japan"`                                                   |
-| `ocrVersion`                   | `string`                                     | `"PP-OCRv5"` (default) or `"PP-OCRv6"`                                                          |
+| `ocrVersion`                   | `string`                                     | `"PP-OCRv6"` (default) or `"PP-OCRv5"`                                                          |
 | `worker`                       | `boolean \| { createWorker?: () => Worker }` | Run in Web Worker                                                                               |
 | `initialize`                   | `boolean`                                    | Await `initialize()` inside `create()`. Defaults to `true`; pass `false` to defer model loading |
 | `pipelineConfig`               | `string \| object`                           | YAML or parsed config object                                                                    |

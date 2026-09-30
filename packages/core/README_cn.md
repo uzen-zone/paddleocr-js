@@ -17,13 +17,13 @@ import { PaddleOCR } from "@uzen/paddleocr-js";
 
 const ocr = await PaddleOCR.create({
   lang: "ch",
-  ocrVersion: "PP-OCRv5",
+  ocrVersion: "PP-OCRv6", // 默认版本；PP-OCRv5 需显式指定
   ortOptions: {
     backend: "auto"
   }
 });
 
-const [result] = await ocr.predict(fileOrBlob);
+const result = await ocr.predict(fileOrBlob);
 console.log(result.items);
 ```
 
@@ -31,7 +31,7 @@ console.log(result.items);
 
 ### 初始化是即时的
 
-`create()` 会先 `await initialize()` 再返回，因此首次调用会下载并打开 ONNX 模型。默认语言下大约 21 MB，冷缓存时可能需要几十秒。首次 `create()` 较慢属于正常现象，不是卡死。
+`create()` 会先 `await initialize()` 再返回，因此首次调用会下载并打开 ONNX 模型。默认的 PP-OCRv6 组合约 **30 MB**，冷缓存时可能需要几十秒；更轻量的 PP-OCRv5 组合约 21 MB。首次 `create()` 较慢属于正常现象，不是卡死。
 
 传入 `initialize: false` 可以立即拿到实例，由你自己启动初始化 —— 适合推迟到用户选好图片后再加载模型，或用于驱动加载指示器：
 
@@ -57,11 +57,17 @@ await ready;
 ```js
 await PaddleOCR.create({
   lang: "ch",
-  ocrVersion: "PP-OCRv5"
+  ocrVersion: "PP-OCRv6" // 默认版本；映射到内置 PP-OCRv6_small 检测/识别模型对
 });
 ```
 
-`ocrVersion: "PP-OCRv6"` 会将受支持的 `lang` 映射到内置的 **PP-OCRv6_small** 检测/识别模型对。若需 **PP-OCRv6_tiny**，请显式指定模型名：
+**PP-OCRv6 是默认引擎。** 传入 `ocrVersion: "PP-OCRv5"` 可选用更轻量的 **PP-OCRv5_mobile** 模型对；也可以只传 `lang`，让默认版本生效：
+
+```js
+await PaddleOCR.create({ lang: "ch" }); // 默认使用 PP-OCRv6
+```
+
+若需 **PP-OCRv6_tiny**，请显式指定模型名：
 
 ```js
 await PaddleOCR.create({
@@ -142,7 +148,7 @@ await PaddleOCR.create({
 ```js
 await PaddleOCR.create({
   lang: "ch",
-  ocrVersion: "PP-OCRv5",
+  ocrVersion: "PP-OCRv6",
   textDetectionBatchSize: 2,
   textRecognitionBatchSize: 8,
   ortOptions: {
@@ -176,13 +182,13 @@ SubPipelines:
 
 SubModules:
   TextDetection:
-    model_name: PP-OCRv5_mobile_det
+    model_name: PP-OCRv6_small_det
     batch_size: 2
   TextLineOrientation:
     model_name: PP-LCNet_x1_0_textline_ori
     batch_size: 6
   TextRecognition:
-    model_name: PP-OCRv5_mobile_rec
+    model_name: PP-OCRv6_small_rec
     batch_size: 6
 `;
 
@@ -250,7 +256,7 @@ import { PaddleOCR } from "@uzen/paddleocr-js";
 
 const ocr = await PaddleOCR.create({
   lang: "ch",
-  ocrVersion: "PP-OCRv5",
+  ocrVersion: "PP-OCRv6",
   worker: true,
   ortOptions: {
     backend: "wasm",
@@ -294,6 +300,16 @@ await PaddleOCR.create({
 ```
 
 worker 模式下若未设置 `wasmPaths`，SDK 会回退到按版本绑定的 CDN，并在控制台打印一条指明所需版本的警告。
+
+## 类型与集成陷阱
+
+以下是最容易消耗调试时间的陷阱。它们在 SDK 侧都是类型安全的，错误假设编译期不会报错，只在运行时失败。
+
+- **`item.poly` 是 `[x, y]` 元组数组，不是 `{ x, y }` 对象。** `Point2D` 导出为 `[x: number, y: number]`；请用 `poly.map(([x, y]) => ...)` 解构。读取 `p.x` 会得到 `undefined`，在 SVG/Canvas 上渲染成 `NaN`。
+- **`lang` 与 `ocrVersion` 是成对校验的。** PP-OCRv5 只接受 `ch`、`chinese_cht`、`en`、`japan`；PP-OCRv6 额外支持约 45 种拉丁语系，但**不支持** `pi`。非法组合会在 `create()` 抛出 `Unsupported lang/ocrVersion combination`。由于 PP-OCRv6 是默认版本，`create({ lang: "pi" })` 是目前最容易触发 v5-only 校验的写法。
+- **`ortOptions.wasmPaths` 必须以斜杠结尾** —— 它是 ONNX Runtime 用来拼接文件名的目录 URL（`/assets/`，而不是 `/assets`），主线程与 worker 都从这里读取。
+- **worker 模式会锁定 ONNX Runtime 版本。** 见 [ONNX Runtime 版本对齐](#onnx-runtime-版本对齐)：用 `INLINED_ORT_VERSION` 与使用方安装的 `onnxruntime-web` 比对，并让 `wasmPaths` 指向该版本的二进制。
+- **可导入的导出类型**：`PaddleOCRCreateOptions`、`OcrResult`、`OcrResultItem`、`OcrPredictInput`、`Point2D`、`INLINED_ORT_VERSION`。`predict` 的返回形态镜像输入形态——单图返回单个 `OcrResult`，数组返回按原顺序排列的 `OcrResult[]`。
 
 ## 可视化
 
@@ -352,7 +368,7 @@ viz 模块会渲染一张左右对比的合成图像：左侧为带有检测框�
 | 参数                           | 类型                                         | 说明                                                                             |
 | ------------------------------ | -------------------------------------------- | -------------------------------------------------------------------------------- |
 | `lang`                         | `string`                                     | 语言代码，如 `"ch"`、`"en"`、`"japan"`                                           |
-| `ocrVersion`                   | `string`                                     | `"PP-OCRv5"`（默认）或 `"PP-OCRv6"`                                              |
+| `ocrVersion`                   | `string`                                     | `"PP-OCRv6"`（默认）或 `"PP-OCRv5"`                                              |
 | `worker`                       | `boolean \| { createWorker?: () => Worker }` | 在 Web Worker 中运行                                                             |
 | `initialize`                   | `boolean`                                    | `create()` 内部是否 `await initialize()`。默认 `true`；传 `false` 可推迟模型加载 |
 | `pipelineConfig`               | `string \| object`                           | YAML 或解析后的配置对象                                                          |

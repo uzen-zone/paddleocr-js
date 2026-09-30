@@ -31,7 +31,7 @@ import { PaddleOCR } from "@uzen/paddleocr-js";
 
 const ocr = await PaddleOCR.create({
   lang: "ch",
-  ocrVersion: "PP-OCRv5"
+  ocrVersion: "PP-OCRv6"
 });
 
 const result = await ocr.predict(blob);

@@ -55,7 +55,7 @@ await PaddleOCR.create({ lang: "ch", ocrVersoin: "PP-OCRv5" });
 
 ### 测试
 
-新增 8 个测试，覆盖：`predict()` 单图/数组两种形态的正反断言、急切初始化的「等待」语义（含变异验证）、`INLINED_ORT_VERSION` 的导出与取值形态、五个 snake_case asset 别名、gzip 往返解压（含变异验证）与截断流。
+新增 11 个测试，覆盖：`predict()` 单图/数组两种形态的正反断言、急切初始化的「等待」语义（含变异验证）、`INLINED_ORT_VERSION` 的导出与取值形态、五个 snake_case asset 别名、gzip 往返解压（含变异验证）与截断流。
 
 ---
 

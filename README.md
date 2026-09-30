@@ -35,7 +35,7 @@ const ocr = await PaddleOCR.create({
 });
 
 const result = await ocr.predict(blob);
-console.log(result[0].items);
+console.log(result.items);
 ```
 
 ## Local development and demo

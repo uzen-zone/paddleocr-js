@@ -131,7 +131,7 @@ await PaddleOCR.create({
 
 **自定义模型包格式与校验行为：**
 
-- 资源需为 **未压缩的标准 tar**（`.tar`）。SDK 按字节解析 tar，**不对 gzip 压缩包解压**；若 URL 指向 `.tar.gz` 等，通常会解析失败并报错。
+- 资源需为 **标准 tar**（`.tar`）归档，也支持 gzip 压缩的 `.tar.gz`。SDK 会嗅探 gzip magic bytes 并自动解压。
 - tar 内必须包含 **`inference.onnx`** 与 **`inference.yml`**（可在子目录中，按文件名匹配）。
 - `inference.yml` 必须能解析出 **`model_name`**，且须与 `textDetectionModelName` / `textRecognitionModelName` **一致**；在 `initialize` 加载模型后会校验。
 

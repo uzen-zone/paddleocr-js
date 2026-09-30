@@ -131,7 +131,7 @@ You can also set `textLineOrientationBatchSize` to control how many cropped text
 
 **Custom model archive format and validation:**
 
-- The downloaded bytes must be an **uncompressed ustar `.tar`**. The SDK does **not** gunzip **`.tar.gz`**; gzip-compressed payloads will usually fail to parse.
+- The downloaded bytes must be a **ustar `.tar`** archive (optionally gzip-compressed as `.tar.gz`). Gzip-compressed archives are detected by their magic bytes and decompressed automatically.
 - The tar must contain **`inference.onnx`** and **`inference.yml`** (optionally under a subdirectory; matched by basename).
 - **`inference.yml`** must define **`model_name`**, and it must match `textDetectionModelName` / `textRecognitionModelName`. This is checked during initialization after load.
 

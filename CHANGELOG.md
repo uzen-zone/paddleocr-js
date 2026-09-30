@@ -1,19 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.0] - 2026-09-30
 
-### 变更
-
-- **默认引擎从 PP-OCRv5 切换为 PP-OCRv6**（行为变更，非 API 破坏）：
-  - 未传 `ocrVersion` 时（无论是否传了 `lang`）解析到内置 **PP-OCRv6_small** 检测/识别模型对（约 30 MB），此前为 PP-OCRv5_mobile（约 21 MB）
-  - 包级默认 `create()`（不传任何选项）同样使用 PP-OCRv6_small
-  - 显式 `ocrVersion: "PP-OCRv5"` 仍解析到轻量的 PP-OCRv5_mobile 模型对
-  - **迁移**：无需改动代码；若在意冷启动下载体积，显式传 `ocrVersion: "PP-OCRv5"` 即可恢复旧默认
-- 文档示例统一改用 PP-OCRv6；core README 新增「类型与集成陷阱」小节，并把 Quick Start 中遗留的 `const [result] = await ocr.predict(...)` 修正为 1.0.0 的单结果形态
-
-## [1.0.0] - 2026-09-29
-
-本版本包含两项 **breaking change**，升级前请阅读对应小节。
+本版本包含两项 **breaking change**，外加一项非破坏的默认行为变更（默认引擎切换为 PP-OCRv6），升级前请阅读对应小节。
 
 ### ⚠️ Breaking changes
 
@@ -57,16 +46,18 @@ await PaddleOCR.create({ lang: "ch", ocrVersoin: "PP-OCRv5" });
 - `Point2D` 元组元素加上 `[x, y]` 标签，并在注释中说明 `[x, y]` 顺序，以及 `.x` / `.y` 在元组上会得到 `undefined` 这一陷阱
 - worker 模式未设置 `wasmPaths` 时的控制台警告现在会指明所需版本
 - `extractTarEntries` 嗅探 gzip magic bytes（`0x1f 0x8b`）并在解析前解压，`.tar.gz` 模型归档现在可用。此前 `.tar.gz` 被当作未压缩 tar 解析，条目名变成乱码，调用方最终看到 `Entry "inference.onnx" was not found in the tar archive.` —— 报错指向归档内容，而真正的问题是归档被压缩了。该函数变为 `async`，但未从包根导出，不涉及公开 API 变更
+- **默认引擎从 PP-OCRv5 切换为 PP-OCRv6**（行为变更，非 API 破坏）：未传 `ocrVersion` 时（无论是否传了 `lang`）解析到内置 **PP-OCRv6_small** 检测/识别模型对（约 30 MB），此前为 PP-OCRv5_mobile（约 21 MB）；包级默认 `create()`（不传任何选项）同样使用 PP-OCRv6_small；显式 `ocrVersion: "PP-OCRv5"` 仍解析到轻量的 PP-OCRv5_mobile 模型对。**迁移**：无需改动代码；若在意冷启动下载体积，显式传 `ocrVersion: "PP-OCRv5"` 即可恢复旧默认
 
 ### 文档
 
 - 说明 `create()` 会**急切初始化**（首次调用下载约 21 MB 模型，冷缓存需数十秒），并补充 `initialize: false` 的延迟加载用法
 - 两份 README 与两份 architecture 文档补充 ONNX Runtime 版本对齐说明
 - 修正 `predict()` 返回值文档中与本次改动不一致的 5 处表述
+- 文档示例统一改用 PP-OCRv6；core README 新增「类型与集成陷阱」小节（`poly` 元组形态、`lang`/`ocrVersion` 成对校验、`wasmPaths` 结尾斜杠、可导出的类型清单），并修正 Quick Start 中遗留的 `const [result] = await ocr.predict(...)` 解构（1.0.0 单图返回单结果）
 
 ### 测试
 
-新增 11 个测试，覆盖：`predict()` 单图/数组两种形态的正反断言、急切初始化的「等待」语义（含变异验证）、`INLINED_ORT_VERSION` 的导出与取值形态、五个 snake_case asset 别名、gzip 往返解压（含变异验证）与截断流。
+新增 11 个测试，覆盖：`predict()` 单图/数组两种形态的正反断言、急切初始化的「等待」语义（含变异验证）、`INLINED_ORT_VERSION` 的导出与取值形态、五个 snake_case asset 别名、gzip 往返解压（含变异验证）与截断流。另新增 4 个默认版本锁定测试（未传 `ocrVersion` → PP-OCRv6_small、无参 `create()` → PP-OCRv6_small、v6-only 拉丁语、v6 排除语言 `pi`），均经变异验证。
 
 ---
 

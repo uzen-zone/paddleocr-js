@@ -269,6 +269,55 @@ describe("PaddleOCR high-level API", () => {
     expectDefaultModelAssets(ocr);
   });
 
+  it("defaults to the PP-OCRv6 small pair when lang is given without ocrVersion", async () => {
+    const ocr = await PaddleOCR.create({
+      lang: "ch",
+      ...CREATE_WITHOUT_INIT
+    });
+
+    expect(ocr.options.pipelineConfig.assets.det?.url).toMatch(/PP-OCRv6_small_det/);
+    expect(ocr.options.pipelineConfig.assets.rec?.url).toMatch(/PP-OCRv6_small_rec/);
+  });
+
+  it("defaults create() with no options to the PP-OCRv6 small pair", async () => {
+    // Unlike the test above (which pins the ocrVersion fallback), this one pins
+    // the package's base selection: the default pipeline YAML and the no-options
+    // path must agree on PP-OCRv6.
+    const ocr = await PaddleOCR.create(CREATE_WITHOUT_INIT);
+
+    expect(ocr.options.pipelineConfig.modelSelection.textDetectionModelName).toBe(
+      "PP-OCRv6_small_det"
+    );
+    expect(ocr.options.pipelineConfig.modelSelection.textRecognitionModelName).toBe(
+      "PP-OCRv6_small_rec"
+    );
+    expect(ocr.options.pipelineConfig.assets.det?.url).toMatch(/PP-OCRv6_small_det/);
+    expect(ocr.options.pipelineConfig.assets.rec?.url).toMatch(/PP-OCRv6_small_rec/);
+  });
+
+  it("defaults a v6-only latin lang without ocrVersion to the small pair", async () => {
+    // `fr` is a v6-only lang (not in the v5 table), so its no-version default
+    // resolves through the v6 path rather than a lang::version lookup.
+    const ocr = await PaddleOCR.create({
+      lang: "fr",
+      ...CREATE_WITHOUT_INIT
+    });
+
+    expect(ocr.options.pipelineConfig.assets.det?.url).toMatch(/PP-OCRv6_small_det/);
+    expect(ocr.options.pipelineConfig.assets.rec?.url).toMatch(/PP-OCRv6_small_rec/);
+  });
+
+  it("rejects v6-excluded langs even without an explicit ocrVersion", async () => {
+    // `pi` is v5-only; with PP-OCRv6 now the default, an unset ocrVersion must
+    // hit the same v6 validation gate instead of falling through to a v5 table.
+    await expect(
+      PaddleOCR.create({
+        lang: "pi",
+        ...CREATE_WITHOUT_INIT
+      })
+    ).rejects.toThrow(/Unsupported lang\/ocrVersion combination/);
+  });
+
   it("maps PP-OCRv6 lang selection to the small model set", async () => {
     const ocr = await PaddleOCR.create({
       lang: "ch",

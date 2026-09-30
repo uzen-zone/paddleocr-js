@@ -29,7 +29,7 @@ SubPipelines:
 SubModules:
   TextDetection:
     module_name: text_detection
-    model_name: PP-OCRv5_mobile_det
+    model_name: PP-OCRv6_small_det
     model_dir: null
     limit_side_len: 64
     limit_type: min
@@ -44,7 +44,7 @@ SubModules:
     batch_size: 6
   TextRecognition:
     module_name: text_recognition
-    model_name: PP-OCRv5_mobile_rec
+    model_name: PP-OCRv6_small_rec
     model_dir: null
     batch_size: 6
     score_thresh: 0.0

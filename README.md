@@ -1,5 +1,12 @@
 # PaddleOCR.js
 
+<p align="center">
+    <a href="https://www.npmjs.com/package/@uzen/paddleocr-js"><img alt="NPM" src="https://img.shields.io/npm/v/@uzen%2Fpaddleocr-js"></a>
+    <a href="https://www.npmjs.com/package/@uzen/paddleocr-js"><img alt="NPM Downloads" src="https://img.shields.io/npm/dw/@uzen%2Fpaddleocr-js"></a>
+    <a href="https://www.jsdelivr.com/package/npm/@uzen/paddleocr-js"><img alt="jsDelivr Hits" src="https://img.shields.io/jsdelivr/npm/hw/@uzen%2Fpaddleocr-js"></a>
+    <a href="https://www.npmjs.com/package/@uzen/paddleocr-js"><img alt="License" src="https://img.shields.io/npm/l/@uzen%2Fpaddleocr-js?color=blue"></a>
+</p>
+
 English | [简体中文](README_cn.md)
 
 Official browser OCR SDK and demo for PaddleOCR.

@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.1] - 2026-10-20
+
+纯文档与仓库维护版本：SDK 代码、构建产物与公开 API 均无任何变化。
+
+### 文档
+
+- 根 README 与包 README（中/英）顶部新增徽章：npm 版本、npm 下载量、jsDelivr Hits、GitHub Stars、License。npm 包页面（`@uzen/paddleocr-js`）现在也会显示这组徽章
+
+### 维护
+
+- 修复 Dependabot 告警 [#43](https://github.com/uzen-zone/paddleocr-js/security/dependabot/43)：`source-map-js` 升级至 1.2.2（CVE-2026-93749，CVSS 7.5）。仅开发依赖，不影响发布产物
+- 新增 `.gitattributes` 固定检出行尾为 LF，Windows 下 `core.autocrlf` 不再导致 `npm run format:check` 假性失败
+
 ## [1.0.0] - 2026-09-30
 
 本版本包含两项 **breaking change**，外加一项非破坏的默认行为变更（默认引擎切换为 PP-OCRv6），升级前请阅读对应小节。
